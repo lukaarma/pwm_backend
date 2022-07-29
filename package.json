@@ -4,9 +4,25 @@
     "description": "PWM is a simple passwor manager website that encrypts locally yours credentials and syncs them accros all your devices.",
     "type": "module",
     "exports": "./build/server.js",
+    "scripts": {
+        "serve:debug": "cross-env NODE_ENV=development NODE_NO_WARNINGS=1 nodemon --inspect-brk ./src/server.ts",
+        "serve:dev": "cross-env NODE_ENV=development NODE_NO_WARNINGS=1 nodemon ./src/server.ts",
+        "preserve:prod": "tsc --project ./tsconfig.prod.json",
+        "serve:prod": "cross-env NODE_ENV=production node ./build/server.js"
+    },
     "contributors": [
         "lukaarma <lukaarma@gmail.com> (https://github.com/lukaarma)",
         "Lorenzo Romio <lorenzo.romio@live.it> (https://github.com/lorenzoromio)"
     ],
-    "license": "MIT"
+    "license": "MIT",
+    "devDependencies": {
+        "@swc/core": "^1.2.220",
+        "@typescript-eslint/eslint-plugin": "^5.31.0",
+        "@typescript-eslint/parser": "^5.31.0",
+        "cross-env": "^7.0.3",
+        "eslint": "^8.20.0",
+        "nodemon": "^2.0.19",
+        "ts-node": "^10.9.1",
+        "typescript": "^4.7.4"
+    }
 }
