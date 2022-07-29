@@ -1,0 +1,7 @@
+{
+    "extends": "./tsconfig",
+    "compilerOptions": {
+        "sourceMap": false, /* Create source map files for emitted JavaScript files. */
+        "removeComments": true, /* Disable emitting comments. */
+    }
+}
