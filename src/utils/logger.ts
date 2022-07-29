@@ -1,6 +1,9 @@
 import chalk from 'chalk';
 import winston from 'winston';
 
+import { LOG_ERRORS } from './errors';
+
+
 const levels = ['debug', 'verbose', 'info', 'warn', 'error'];
 
 export function initLogger(): void {
@@ -45,7 +48,7 @@ export function initLogger(): void {
         }));
     }
     else {
-        winston.warn('No enviroment detected, no file transport created. Check your NODE_ENV variable!');
+        winston.warn(LOG_ERRORS.MISSING_NODE_ENV);
     }
 }
 
