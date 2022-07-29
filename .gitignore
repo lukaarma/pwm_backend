@@ -1,0 +1,9 @@
+.key
+.env
+package-lock.json
+*.log
+
+
+build/
+node_modules/
+logs/

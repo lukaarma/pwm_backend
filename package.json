@@ -1,0 +1,12 @@
+{
+    "name": "pwm_backend",
+    "version": "1.0.0",
+    "description": "PWM is a simple passwor manager website that encrypts locally yours credentials and syncs them accros all your devices.",
+    "type": "module",
+    "exports": "./build/server.js",
+    "contributors": [
+        "lukaarma <lukaarma@gmail.com> (https://github.com/lukaarma)",
+        "Lorenzo Romio <lorenzo.romio@live.it> (https://github.com/lorenzoromio)"
+    ],
+    "license": "MIT"
+}
