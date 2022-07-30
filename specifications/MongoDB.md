@@ -11,5 +11,6 @@
 - ➡️ `lastName: string` → allowed lowercase, uppercase, single/multiple names with space and single quote
 - ➡️ `email: string` → UNIQUE, server side validation before account activation
 - ➡️ `password: string` → min length 8, min 1 lowercase, 1 uppercase, 1 number, 1 [ @ $ ! % * ? & ]
-- ⚙️ `creationDate: datetime`
+- ⚙️ `createdAt: datetime`
+- ⚙️ `updatedAt: datetime`
 - ⚙️ `UUID: MongoDB unique id`
