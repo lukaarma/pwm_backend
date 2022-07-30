@@ -2,7 +2,7 @@ import fs from 'fs';
 import logger from 'winston';
 import mongoose from 'mongoose';
 
-import { LOG_ERRORS } from '../utils/errors';
+import { LOG_ERRORS } from '../utils/messages';
 
 export async function initDatabase(): Promise<void> {
     // Check relevant env variables

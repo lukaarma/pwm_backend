@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import winston from 'winston';
 
-import { LOG_ERRORS } from './errors';
+import { LOG_WARN } from './messages';
 
 
 const levels = ['debug', 'verbose', 'info', 'warn', 'error'];
@@ -48,7 +48,7 @@ export function initLogger(): void {
         }));
     }
     else {
-        winston.warn(LOG_ERRORS.MISSING_NODE_ENV);
+        winston.warn(LOG_WARN.MISSING_NODE_ENV);
     }
 }
 
