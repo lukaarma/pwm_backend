@@ -1,8 +1,6 @@
 import chalk from 'chalk';
 import winston from 'winston';
 
-import { LOG_WARN } from './messages';
-
 
 const levels = ['debug', 'verbose', 'info', 'warn', 'error'];
 
@@ -12,7 +10,7 @@ export function initLogger(): void {
     if (process.env.LOG_LEVEL && levels.includes(process.env.LOG_LEVEL)) {
         winston.level = process.env.LOG_LEVEL;
     }
-    else if (!process.env.LOG_LEVEL && process.env.NODE_ENV === 'development') {
+    else if (!process.env.LOG_LEVEL && process.env.NODE_ENV !== 'production') {
         winston.level = 'verbose';
     }
 
@@ -28,9 +26,16 @@ export function initLogger(): void {
     }));
 
     // File transports based on enviroment:
-    // DEVELOPMENT => Every message logged, wiped every run
     // PRODUCTION => Errors only, never deleted
-    if (process.env.NODE_ENV === 'development') {
+    // DEFAULT DEVELOPMENT => Every message logged, wiped every run
+    if (process.env.NODE_ENV === 'production') {
+        winston.add(new winston.transports.File({
+            filename: 'logs/error.log',
+            level: 'error',
+            format: winston.format.json()
+        }));
+    }
+    else {
         winston.add(new winston.transports.File({
             filename: 'logs/debug.log',
             level: 'debug',
@@ -39,16 +44,6 @@ export function initLogger(): void {
                 flags: 'w'
             }
         }));
-    }
-    else if (process.env.NODE_ENV === 'production') {
-        winston.add(new winston.transports.File({
-            filename: 'logs/error.log',
-            level: 'error',
-            format: winston.format.json()
-        }));
-    }
-    else {
-        winston.warn(LOG_WARN.MISSING_NODE_ENV);
     }
 }
 

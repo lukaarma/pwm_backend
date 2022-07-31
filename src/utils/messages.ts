@@ -6,7 +6,7 @@ export const LOG_ERRORS = {
 };
 
 export const LOG_WARN = {
-    MISSING_NODE_ENV: 'No enviroment information detected, no file transport created.\n Check that your NODE_ENV variable exists and is a valid value!',
+    MISSING_NODE_ENV: "No enviroment information detected, Defaulting to 'development'!\n If you are in a prduction enviroment che that your NODE_ENV enviroment variable is set correctly.",
     MISSING_SERVER_HOSTNAME: "No server hostname specified, using 'localhost'. If you want to specify an hostname use the SERVER_HOSTNAME enviroment variable.",
     MISSING_SERVER_PORT: 'No server port specified, using 9001. If you want to specify a port use the SERVER_PORT enviroment variable.'
 };
