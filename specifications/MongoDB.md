@@ -7,10 +7,10 @@
 
 ## USER
 
+- ➡️ `email: string` → UNIQUE, server side validation before account activation, not updatable (for now)
+- ➡️ `password: string` → stored as bcrypt hash. Min length 10, min 1 lowercase, 1 uppercase, 1 number, 1 [ @ $ ! % * ? & ]
 - ➡️ `firstName: string` → allowed lowercase, uppercase, single/multiple names with space and single quote
 - ➡️ `lastName: string` → allowed lowercase, uppercase, single/multiple names with space and single quote
-- ➡️ `email: string` → UNIQUE, server side validation before account activation
-- ➡️ `password: string` → min length 8, min 1 lowercase, 1 uppercase, 1 number, 1 [ @ $ ! % * ? & ]
 - ⚙️ `createdAt: datetime`
 - ⚙️ `updatedAt: datetime`
-- ⚙️ `UUID: MongoDB unique id`
+- ⚙️ `_id: MongoDB unique id`

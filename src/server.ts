@@ -1,12 +1,12 @@
+import crypto from 'crypto';
 import 'dotenv/config';
 import express from 'express';
-import mongoose from 'mongoose';
 import morgan from 'morgan';
 import logger from 'winston';
 
 import { initDatabase } from './database/database';
-// import userRouter from './routers/user';
-import { LOG_WARN } from './utils/messages';
+import userRouter from './routers/userRouter';
+import { LOG_WARN, LOG_ERRORS } from './utils/messages';
 import { initLogger } from './utils/logger';
 
 
@@ -18,14 +18,27 @@ TODO:
     - JWT authorization logic!
     - user input XSS sanitization
 */
+const envVars = ['NODE_ENV', 'LOG_LEVEL', 'SERVER_HOSTNAME', 'SERVER_PORT', 'SERVER_REVERSE_PROXY', 'MONGODB_SERVER', 'MONGODB_USERNAME', 'MONGODB_PASSWORD', 'MONGODB_X509', 'MONGODB_NAME'];
 
+// first of all init logger to create transports
 initLogger();
-if (!process.env.NODE_ENV) {
-    logger.warn(LOG_WARN.MISSING_NODE_ENV);
-    process.env.NODE_ENV == 'development';
+// list expected ENV for debug
+for (const env of envVars) {
+    logger.debug(`${env} = ${process.env[env] ?? 'undefined'}`);
 }
 
-
+// check
+if (!process.env.NODE_ENV) {
+    logger.warn(LOG_WARN.MISSING_NODE_ENV);
+    process.env.NODE_ENV = 'development';
+}
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'development') {
+    logger.warn(LOG_WARN.RANDOM_JWT_SECRET);
+    process.env.JWT_SECRET = crypto.randomBytes(256).toString('hex');
+}
+else if (!process.env.JWT_SECRET) {
+    logger.error(LOG_ERRORS.MISSING_JWT_SECRET);
+}
 
 logger.info('\nInitalizing database...');
 await initDatabase();
@@ -48,7 +61,7 @@ if (process.env.SERVER_REVERSE_PROXY) {
 
 logger.info('Installing middlewares...');
 // middleware stack.
-server.use(morgan(':remote-addr :method :url :status :response-time ms - :res[content-length]'));
+server.use(morgan('dev'));
 server.use(express.json());
 
 logger.info('Installing routers...');
@@ -67,7 +80,7 @@ if (process.env.NODE_ENV === 'development') {
     });
 }
 
-// server.use('/api/user', userRouter);
+server.use('/api/user', userRouter);
 
 logger.info('Server initialization done!\n');
 
@@ -85,5 +98,3 @@ server.listen(
         }
     }
 );
-
-await mongoose.disconnect();

@@ -10,6 +10,7 @@ PWM is a simple password manager website that encrypts locally your credentials 
 | -------------- | --------------- | ----- | :------: | ----------- |
 | NODE_ENV  | 'production', 'development' | 'development' | ❌ | Set the enviroment in which the server will be deployed.<br> Development will enable more detailed logs. |
 | LOG_LEVEL  | 'debug', 'verbose', 'info', 'warn', 'error' | 'info' | ❌ | Set the console log level, log files are unaffected.  |
+| JWT_SECRET | String | undefined | ❔ | Set the JWT secret for the bearer tokens.<br> ❔ This is required only in production |
 
 ### Server options
 
