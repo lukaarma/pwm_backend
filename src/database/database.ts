@@ -1,8 +1,9 @@
 import fs from 'fs';
-import logger from 'winston';
 import mongoose from 'mongoose';
+import logger from 'winston';
 
 import { LOG_ERRORS } from '../utils/messages';
+
 
 export async function initDatabase(): Promise<void> {
     // Check relevant env variables
