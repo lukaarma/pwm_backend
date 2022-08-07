@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import logger from 'winston';
+
 import { IUser, IUserToJSON, UserModel } from '../utils/types';
 
 
@@ -40,11 +41,26 @@ userSchema.pre('save', async function (next) {
     if (this.isNew || this.isModified('passwordHash')) {
         await bcrypt.hash(this.password, 12)
             .then(hash => {
-                logger.debug('[USER_MODEL] New password hash created');
+                logger.debug('[USER_MODEL] Password hash created');
                 this.password = hash;
             })
             .catch(err => next(err as Error));
     }
+});
+
+userSchema.pre('findOneAndUpdate', async function (next) {
+    const update = this.getUpdate() as mongoose.UpdateQuery<IUser>;
+
+    if (update.password) {
+        await bcrypt.hash(update.password as string, 12)
+            .then(hash => {
+                logger.debug('[USER_MODEL] Password hash created');
+                update.password = hash;
+            })
+            .catch(err => next(err as Error));
+    }
+
+    this.setUpdate(update);
 });
 
 // remove sensitive/useless information from the JSON sent to the clients

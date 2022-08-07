@@ -8,7 +8,9 @@ import { LoginBody, SignupBody } from '../utils/types';
 
 /* TODO:
     - validate user input
+    - email validaiìtion
     - move response messages in utils/message.ts
+    - better error handling!
 */
 
 const userRouter = express.Router();
@@ -34,6 +36,8 @@ userRouter.post('/login', async (req, res) => {
         });
     }
     else {
+        logger.debug(`[LOGIN] login failed for ${login.email}: ${user ? 'Wrong password' : 'Wrong email'}`);
+
         res.status(401).json({
             code: 100,
             type: 'FailedLogin',
@@ -80,6 +84,56 @@ userRouter.post('/signup', async (req, res) => {
             code: 103,
             type: 'EmailNotAviable',
             message: 'The email is already assigned to a user'
+        });
+    }
+});
+
+
+// NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+userRouter.get('/profile', async (req, res) => {
+    logger.verbose(`[PROFILE] Requested profile with id '${req.jwtInfo.id}'`);
+
+    const user = await User.findOne({ _id: req.jwtInfo.id });
+    if (user) {
+        logger.debug(`[PROFILE] Found user '${user.email}' with id '${req.jwtInfo.id}'`);
+
+        res.status(200).json(user.toJSON());
+    }
+    else {
+        logger.error(`This is fine. Request in auth route '${req.path}' without JWT.`);
+        res.status(500).json({
+            code: 999,
+            type: 'EverythingIsOnFire',
+            message: 'This is fine. Request in auth route without JWT.'
+        });
+    }
+});
+
+// NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+userRouter.put('/profile', async (req, res) => {
+    const profile: SignupBody = req.body as SignupBody;
+
+    logger.verbose(`[PROFILE] Updated profile with id '${req.jwtInfo.id}'`);
+
+    const user = await User.findOneAndUpdate(
+        { _id: req.jwtInfo.id },
+        profile
+    );
+
+    if (user) {
+        logger.debug(`[SIGNUP] updated user '${user.email}' with id '${req.jwtInfo.id}':\n\t` +
+            `${user.firstName} => ${profile.firstName}\n\t${user.lastName} => ${profile.lastName}`);
+
+        res.status(200).json(user.toJSON());
+    }
+    else {
+        logger.error(`This is fine. Request in auth route '${req.path}' without JWT.`);
+        res.status(500).json({
+            code: 999,
+            type: 'EverythingIsOnFire',
+            message: 'This is fine. Request in auth route without JWT.'
         });
     }
 });

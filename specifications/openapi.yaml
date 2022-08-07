@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
     title: PassWordManagerAPI
-    version: 1.0.0
+    version: 1.0.1
     description: >-
         PassWordManager API used to manage users, personal credential databases and
         the services offered to the user
@@ -17,8 +17,6 @@ servers:
       description: Development environment
     - url: "https://pwm.lukaarma.dynu.net/api"
       description: Production environment
-
-tags: []
 
 paths:
     /user/login:
@@ -58,17 +56,9 @@ paths:
                                     firstName:
                                         type: string
                 "400":
-                    description: Bad request
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/Error"
+                    $ref: "#/components/responses/400"
                 "500":
-                    description: Server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/Error"
+                    $ref: "#/components/responses/500"
 
     /user/signup:
         post:
@@ -104,17 +94,9 @@ paths:
                 "200":
                     description: Signup successful
                 "400":
-                    description: Bad request
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/Error"
+                    $ref: "#/components/responses/400"
                 "500":
-                    description: Server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/Error"
+                    $ref: "#/components/responses/500"
 
     /user/profile:
         get:
@@ -124,28 +106,9 @@ paths:
             operationId: ""
             responses:
                 "200":
-                    description: Complete user info
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                required:
-                                    - email
-                                    - firstName
-                                    - lastName
-                                properties:
-                                    email:
-                                        type: string
-                                    firstName:
-                                        type: string
-                                    lastName:
-                                        type: string
+                    $ref: "#/components/responses/UserInfoResponse"
                 "500":
-                    description: Server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/Error"
+                    $ref: "#/components/responses/500"
 
         put:
             summary: Update user informations
@@ -159,6 +122,8 @@ paths:
                         schema:
                             type: object
                             properties:
+                                password:
+                                    type: string
                                 firstName:
                                     type: string
                                 lastName:
@@ -166,34 +131,11 @@ paths:
 
             responses:
                 "200":
-                    description: "Update successful, returned new user info"
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                required:
-                                    - email
-                                    - firstName
-                                    - lastName
-                                properties:
-                                    email:
-                                        type: string
-                                    firstName:
-                                        type: string
-                                    lastName:
-                                        type: string
+                    $ref: "#/components/responses/UserInfoResponse"
                 "400":
-                    description: Bad request
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/Error"
+                    $ref: "#/components/responses/400"
                 "500":
-                    description: Server error
-                    content:
-                        application/json:
-                            schema:
-                                $ref: "#/components/schemas/Error"
+                    $ref: "#/components/responses/500"
 
 components:
     securitySchemes:
@@ -216,10 +158,40 @@ components:
                     type: string
                 code:
                     type: integer
+        UserInfo:
+            type: object
+            required:
+                - email
+                - firstName
+                - lastName
+            properties:
+                email:
+                    type: string
+                firstName:
+                    type: string
+                lastName:
+                    type: string
 
-    links: {}
+    responses:
+        UserInfoResponse:
+            description: Complete user info
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/UserInfo"
+        "400":
+            description: Bad request
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"
 
-    callbacks: {}
+        "500":
+            description: Server error
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"
 
 security:
     - JWTAuth: []
