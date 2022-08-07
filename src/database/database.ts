@@ -40,7 +40,6 @@ export async function initDatabase(): Promise<void> {
         };
 
         logger.verbose('[DATABASE] Using X509 auth');
-        logger.debug(`[DATABASE] X509 cert path '${process.env.MONGODB_X509}'`);
     }
     else {
         mongooseOptions = {

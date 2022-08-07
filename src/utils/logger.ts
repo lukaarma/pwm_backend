@@ -61,16 +61,16 @@ function customLogPrint(info: winston.Logform.TransformableInfo): string {
             return `${chalk.yellow('[WARNING]')} ${info.stack ?? info.message ?? 'NO WARNING INFO'}`;
         }
         case 'info': {
-            return String(info.message);
+            return `${chalk.green('[INFO]')} ${info.message}`;
         }
         case 'verbose': {
-            return chalk.cyan(`[VERBOSE] ${info.message}`);
+            return `${chalk.cyan('[VERBOSE]')} ${info.message}`;
         }
         case 'debug': {
-            return chalk.magenta(`[DEBUG] ${info.message}`);
+            return `${chalk.magenta('[DEBUG]')} ${info.message}`;
         }
         default: {
-            return chalk.yellow('\n[WARNING] Invalid log level!\n');
+            return chalk.red('\n[ERROR] Invalid log level!\n');
         }
     }
 }
