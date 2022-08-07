@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import logger from 'winston';
 
 import { initDatabase } from './database/database';
+import JWTAuth from './middleware/JWTAuth';
 import userRouter from './routers/userRouter';
 import { LOG_WARN, LOG_ERRORS } from './utils/messages';
 import { initLogger } from './utils/logger';
@@ -17,6 +18,7 @@ TODO:
     - express-mongo-sanitize, sanitize mongodb input to prevent query injection
     - JWT authorization logic!
     - user input XSS sanitization
+    - fronted router
 */
 const envVars = ['NODE_ENV', 'LOG_LEVEL', 'SERVER_HOSTNAME', 'SERVER_PORT', 'SERVER_REVERSE_PROXY', 'MONGODB_SERVER', 'MONGODB_USERNAME', 'MONGODB_PASSWORD', 'MONGODB_X509', 'MONGODB_NAME'];
 
@@ -40,7 +42,7 @@ else if (!process.env.JWT_SECRET) {
     logger.error(LOG_ERRORS.MISSING_JWT_SECRET);
 }
 
-logger.info('\nInitalizing database...');
+logger.info('Initalizing database...');
 await initDatabase();
 logger.info('Database connection initialized! Initializing server...');
 
@@ -63,6 +65,7 @@ logger.info('Installing middlewares...');
 // middleware stack.
 server.use(morgan('dev'));
 server.use(express.json());
+server.use(JWTAuth(['/api/user/login', '/api/user/signup']));
 
 logger.info('Installing routers...');
 // echo development endpoint
@@ -82,7 +85,7 @@ if (process.env.NODE_ENV === 'development') {
 
 server.use('/api/user', userRouter);
 
-logger.info('Server initialization done!\n');
+logger.info('Server initialization done!');
 
 server.listen(
     parseInt(process.env.SERVER_PORT),
@@ -90,11 +93,11 @@ server.listen(
         if (process.env.SERVER_REVERSE_PROXY) {
             // NOTE: false positive, already checked existance
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            logger.info(`Listening on 'https://${process.env.SERVER_HOSTNAME}'.`);
+            logger.info(`Listening on 'https://${process.env.SERVER_HOSTNAME}'\n`);
         }
         else {
             // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-            logger.info(`Listening on 'http://${process.env.SERVER_HOSTNAME}:${process.env.SERVER_PORT}'`);
+            logger.info(`Listening on 'http://${process.env.SERVER_HOSTNAME}:${process.env.SERVER_PORT}'\n`);
         }
     }
 );

@@ -1,7 +1,26 @@
+import { Jwt } from 'jsonwebtoken';
 import mongoose from 'mongoose';
 
 
-// API types
+// extend default JWT fields
+type JwtInfo = Jwt & {
+    id: string;
+}
+
+// add JWT token info in Express request
+declare module 'express-serve-static-core' {
+    // NOTE: must be interface to type merge with @types/express declaration
+    // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+    interface Request {
+        jwtInfo: JwtInfo;
+    }
+}
+
+export { JwtInfo };
+
+
+/* ===== API types ===== */
+
 type LoginBody = {
     email: string,
     password: string
