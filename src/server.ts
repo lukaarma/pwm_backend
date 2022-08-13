@@ -47,6 +47,10 @@ await initDatabase();
 logger.info('Database connection initialized! Initializing server...');
 
 const server = express();
+const excludedRoutes = ['/api/user/login', '/api/user/signup', '/api/user/verify'];
+if (process.env.NODE_ENV === 'development') {
+    excludedRoutes.push('/api/echo');
+}
 // check env
 if (!process.env.SERVER_HOSTNAME) {
     logger.warn(LOG_WARN.MISSING_SERVER_HOSTNAME);
@@ -65,7 +69,7 @@ logger.info('Installing middlewares...');
 // middleware stack.
 server.use(morgan('dev'));
 server.use(express.json());
-server.use(JWTAuth(['/api/user/login', '/api/user/signup']));
+server.use(JWTAuth(excludedRoutes));
 
 logger.info('Installing routers...');
 // echo development endpoint

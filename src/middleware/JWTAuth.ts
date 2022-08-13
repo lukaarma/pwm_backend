@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import logger from 'winston';
 
 import { JwtInfo } from '../utils/types';
-
+import { WEB_ERRORS } from '../utils/messages';
 
 /* TODO:
     - move response messages in utils/message.ts
@@ -15,8 +15,7 @@ export default function (exludedPaths?: Array<string>):
     logger.verbose('[JWTauth] excluded paths: ' + JSON.stringify(exludedPaths, null, 4));
 
     return (req, res, next): void => {
-
-        if (exludedPaths?.some((path) => req.path === path)) {
+        if (exludedPaths?.some((path) => req.path.startsWith(path))) {
             logger.debug(`[JWTauth] excluded path used '${req.path}'`);
 
             return next();
@@ -34,13 +33,10 @@ export default function (exludedPaths?: Array<string>):
                 logger.debug(`[JWTauth] invalid JWT token on path '${req.path}'`);
             }
         }
+        else {
+            logger.debug(`[JWTauth] missing JWT token on path '${req.path}'`);
+        }
 
-        logger.debug(`[JWTauth] missing JWT token on path '${req.path}'`);
-
-        res.status(401).json({
-            code: 100,
-            type: 'Unauthorized',
-            message: 'Wron username or password!'
-        });
+        res.status(401).json(WEB_ERRORS.UNAUTHARIZED_ACCESS);
     };
 }
