@@ -1,0 +1,15 @@
+{
+    "recommendations": [
+        "editorconfig.editorconfig",
+        "irongeek.vscode-env",
+        "dbaeumer.vscode-eslint",
+        "bierner.github-markdown-preview",
+        "visualstudioexptteam.vscodeintellicode",
+        "ms-vscode.vscode-typescript-next",
+        "ms-vsliveshare.vsliveshare",
+        "davidanson.vscode-markdownlint",
+        "gruntfuggly.todo-tree",
+        "redhat.vscode-yaml",
+        "esbenp.prettier-vscode"
+    ]
+}
