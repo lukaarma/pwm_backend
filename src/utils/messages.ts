@@ -12,3 +12,26 @@ export const LOG_WARN = {
     MISSING_SERVER_PORT: 'No server port specified, using 9001.\nIf you want to specify a port use the SERVER_PORT enviroment variable.',
     RANDOM_JWT_SECRET: 'No JWT secret provided, generating random secret for development enviroment.\nIf you want to specify a port JWT secret the JWT_SECRET enviroment variable.'
 };
+
+export const WEB_ERRORS = {
+    LOGIN_FAILED: {
+        code: 100,
+        message: 'Wrong username or password!'
+    },
+    SIGNUP_ERROR: {
+        code: 101,
+        message: 'Server side error, please try again later'
+    },
+    UNAUTHARIZED_ACCESS: {
+        code: 102,
+        message: 'Unautharized access. Go away!'
+    },
+    INVALID_VERIFICAION_TOKEN: {
+        code: 104,
+        message: 'Invalid, expired or already verified token submitted'
+    },
+    EVERYTHING_IS_ON_FIRE: {
+        code: 999,
+        message: 'This is fine. Request in auth route with JWT and invalid id.'
+    }
+};

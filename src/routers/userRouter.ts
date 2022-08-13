@@ -3,16 +3,15 @@ import jwt from 'jsonwebtoken';
 import logger from 'winston';
 
 import User from '../database/userModel';
+import { WEB_ERRORS } from '../utils/messages';
 import { LoginBody, SignupBody } from '../utils/types';
 
 
 /* TODO:
     - validate user input
-    - email validaiìtion
-    - move response messages in utils/message.ts
+    - email validation
     - better error handling!
 */
-
 const userRouter = express.Router();
 
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
@@ -38,11 +37,7 @@ userRouter.post('/login', async (req, res) => {
     else {
         logger.debug(`[LOGIN] login failed for ${login.email}: ${user ? 'Wrong password' : 'Wrong email'}`);
 
-        res.status(401).json({
-            code: 100,
-            type: 'FailedLogin',
-            message: 'Wron username or password!'
-        });
+        res.status(401).json(WEB_ERRORS.LOGIN_FAILED);
     }
 });
 
@@ -65,25 +60,21 @@ userRouter.post('/signup', async (req, res) => {
             .then(() => {
                 logger.debug(`[SIGNUP] New user signup '${signup.email}'`);
 
+                // FIXME: change this to "Confermation email" message
                 res.status(200).json(newUser.toJSON());
             }).catch((err: Error) => {
                 logger.error({ message: err });
                 logger.debug(`[SIGNUP] Failed new user signup, db error '${signup.email}'`);
 
-                res.status(500).json({
-                    code: 102,
-                    type: 'SignupError',
-                    message: 'Server side error, please try again later'
-                });
+                return res.status(500).json(WEB_ERRORS.SIGNUP_ERROR);
             });
     }
     else {
         logger.debug(`[SIGNUP] Failed new user signup, already exists '${signup.email}'`);
-        // FIXME: change this to the same "Confermation email" message of succes to prevent user enum
+
         res.status(400).json({
             code: 103,
-            type: 'EmailNotAviable',
-            message: 'The email is already assigned to a user'
+            message: `A confirmation email was sent to '${signup.email}'. Please check your inbox.'`
         });
     }
 });
@@ -101,12 +92,8 @@ userRouter.get('/profile', async (req, res) => {
         res.status(200).json(user.toJSON());
     }
     else {
-        logger.error(`This is fine. Request in auth route '${req.path}' without JWT.`);
-        res.status(500).json({
-            code: 999,
-            type: 'EverythingIsOnFire',
-            message: 'This is fine. Request in auth route without JWT.'
-        });
+        logger.error(`[PROFILE] This is fine. Request in auth route '${req.path}' with JWT and invalid id.`);
+        res.status(500).json(WEB_ERRORS.EVERYTHING_IS_ON_FIRE);
     }
 });
 
