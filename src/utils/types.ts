@@ -53,8 +53,8 @@ type IUserToJSON = {
     firstName: string,
     lastName: string
     _id?: string,
-    createdAt?: string,
-    updatedAt?: string
+    createdAt?: Date,
+    updatedAt?: Date
 }
 
 // Create interface for the method added to the document
@@ -65,7 +65,23 @@ type IUserMethods = {
 // Create Mongoose model that knows the signature of
 // the new static methods added to the model and the document
 type UserModel = mongoose.Model<IUser, unknown, IUserMethods> & {
-    build(item: IUser): mongoose.Document<IUser>
+    build(item: IUser): mongoose.Document<IUser> & IUser & {
+        _id: mongoose.Types.ObjectId;
+    }
 };
 
 export { IUser, IUserToJSON, UserModel };
+
+// Create Typescipt interface that reflects the Mongoose schema for verification token
+type IVerificationToken = {
+    token: string,
+    userId: mongoose.Types.ObjectId
+};
+
+type VerificationTokenModel = mongoose.Model<IVerificationToken, unknown, unknown> & {
+    build(item: IVerificationToken): mongoose.Document<IVerificationToken> & IVerificationToken & {
+        _id: mongoose.Types.ObjectId;
+    }
+};
+
+export { IVerificationToken, VerificationTokenModel };

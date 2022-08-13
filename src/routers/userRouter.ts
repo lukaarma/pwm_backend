@@ -1,8 +1,10 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import { v4 as uuidv4 } from 'uuid';
 import logger from 'winston';
 
-import User from '../database/userModel';
+import { User, UserVerification } from '../database/userModel';
+import VerificationToken from '../database/verificationTokenModel';
 import { WEB_ERRORS } from '../utils/messages';
 import { LoginBody, SignupBody } from '../utils/types';
 
@@ -31,7 +33,7 @@ userRouter.post('/login', async (req, res) => {
 
         res.setHeader('Authorization', `Bearer ${token}`);
         res.status(200).json({
-            firstName: user?.firstName
+            firstName: user.firstName
         });
     }
     else {
@@ -48,20 +50,28 @@ userRouter.post('/signup', async (req, res) => {
 
     logger.verbose(`[SIGNUP] New signup request: '${signup.email}' (${signup.lastName} ${signup.firstName})`);
 
-    if (!await User.exists({ email: signup.email })) {
-        const newUser = User.build({
+    if (!await User.exists({ email: signup.email }) || !await UserVerification.exists({ email: signup.email })) {
+        const newUser = UserVerification.build({
             email: signup.email,
             password: signup.password,
             firstName: signup.firstName,
             lastName: signup.lastName
         });
 
-        newUser.save()
-            .then(() => {
+        await newUser.save()
+            .then(async () => {
                 logger.debug(`[SIGNUP] New user signup '${signup.email}'`);
 
                 // FIXME: change this to "Confermation email" message
                 res.status(200).json(newUser.toJSON());
+
+                const verificationToken = VerificationToken.build({
+                    token: uuidv4(),
+                    userId: newUser._id
+                });
+                await verificationToken.save();
+
+                logger.debug(`[TOKEN] Token '${verificationToken.token}' created for account '${newUser.email}'`);
             }).catch((err: Error) => {
                 logger.error({ message: err });
                 logger.debug(`[SIGNUP] Failed new user signup, db error '${signup.email}'`);
@@ -110,18 +120,53 @@ userRouter.put('/profile', async (req, res) => {
     );
 
     if (user) {
-        logger.debug(`[SIGNUP] updated user '${user.email}' with id '${req.jwtInfo.id}':\n\t` +
+        logger.debug(`[PROFILE] updated user '${user.email}' with id '${req.jwtInfo.id}':\n\t` +
             `${user.firstName} => ${profile.firstName}\n\t${user.lastName} => ${profile.lastName}`);
 
         res.status(200).json(user.toJSON());
     }
     else {
-        logger.error(`This is fine. Request in auth route '${req.path}' without JWT.`);
-        res.status(500).json({
-            code: 999,
-            type: 'EverythingIsOnFire',
-            message: 'This is fine. Request in auth route without JWT.'
-        });
+        logger.error(`[PROFILE] This is fine. Request in auth route '${req.path}' with JWT and invalid id.`);
+        res.status(500).json(WEB_ERRORS.EVERYTHING_IS_ON_FIRE);
+    }
+});
+
+// NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+userRouter.get('/verify/:token', async (req, res) => {
+    logger.verbose(`[VERIFY] Requested verification for token '${req.params.token}'`);
+
+    const token = await VerificationToken.findOne({ token: req.params.token });
+    if (token) {
+        logger.debug(`[VERIFY] Found token '${token.token}' for userId '${token.userId.toString()}'`);
+
+        const user = await UserVerification.findOne({ _id: token.userId });
+        if (user) {
+            logger.debug(`[VERIFY] Found user '${user.email}' with userId '${user.id}'`);
+
+            const verifiedUser = User.build({
+                email: user.email,
+                password: user.password,
+                firstName: user.firstName,
+                lastName: user.lastName
+            });
+
+            await verifiedUser.save();
+            await user.remove();
+            await token.remove();
+
+            logger.debug(`[VERIFY] User '${user.email}' verified`);
+
+            res.status(200).send();
+        }
+        else {
+            logger.error(`[VERIFY] This is fine. Recived valid token with '${token.token}' invalid userId '${token.userId.toString()}'`);
+            res.status(500).json(WEB_ERRORS.EVERYTHING_IS_ON_FIRE);
+        }
+    }
+    else {
+        logger.debug(`[VERIFY] Invalid, expired or already verified token submitted '${req.params.token}'`);
+        res.status(400).json(WEB_ERRORS.INVALID_VERIFICAION_TOKEN);
     }
 });
 
