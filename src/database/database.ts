@@ -6,22 +6,6 @@ import { LOG_ERRORS } from '../utils/messages';
 
 
 export async function initDatabase(): Promise<void> {
-    // Check relevant env variables
-    if (!process.env.MONGODB_SERVER) {
-        logger.error(LOG_ERRORS.MISSING_MONGODB_SERVER);
-        process.exit(1);
-    }
-    // We need a X509 certificate or username and password
-    if (!process.env.MONGODB_X509 &&
-        !(process.env.MONGODB_USERNAME && process.env.MONGODB_PASSWORD)) {
-        logger.error(LOG_ERRORS.MISSING_MONGODB_CREDENTIALS);
-        process.exit(1);
-    }
-    if (!process.env.MONGODB_NAME) {
-        logger.error(LOG_ERRORS.MISSING_MONGODB_NAME);
-        process.exit(1);
-    }
-
     let mongooseOptions: mongoose.ConnectOptions = {
         dbName: process.env.MONGODB_NAME
     };

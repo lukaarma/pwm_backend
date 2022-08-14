@@ -13,6 +13,7 @@ import { LoginBody, SignupBody } from '../utils/types';
     - validate user input
     - email validation
     - better error handling!
+    - email revalidation if token timeout
 */
 const userRouter = express.Router();
 
@@ -26,9 +27,7 @@ userRouter.post('/login', async (req, res) => {
     const user = await User.findOne({ email: login.email });
 
     if (user && (await user.validatePassword(login.password))) {
-        // NOTE: already checked during initialization
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET!, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         logger.debug(`[LOGIN] bearer token created for ${login.email}`);
 
         res.setHeader('Authorization', `Bearer ${token}`);
@@ -62,8 +61,10 @@ userRouter.post('/signup', async (req, res) => {
             .then(async () => {
                 logger.debug(`[SIGNUP] New user signup '${signup.email}'`);
 
-                // FIXME: change this to "Confermation email" message
-                res.status(200).json(newUser.toJSON());
+                res.status(200).json({
+                    code: 103,
+                    message: `A confirmation email was sent to '${signup.email}'. Please check your inbox.'`
+                });
 
                 const verificationToken = VerificationToken.build({
                     token: uuidv4(),
@@ -88,7 +89,6 @@ userRouter.post('/signup', async (req, res) => {
         });
     }
 });
-
 
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises

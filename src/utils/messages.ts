@@ -3,7 +3,14 @@ export const LOG_ERRORS = {
     MISSING_MONGODB_CREDENTIALS: 'Missing MongoDB credentials!\nPlease supply a X509 certificate with the MONGODB_X509 enviroment variable or set MONGODB_USERNAME and MONGODB_PASSWORD for a traditiona login!',
     MISSING_MONGODB_NAME: 'Missing MongoDB database name!\nPlease use the MONGODB_NAME enviroment variable to specify the database name!',
     INVALID_MONGODB_X509: 'The file path provided in MONGODB_X509 is not valid! Please check the file path and try again.',
-    MISSING_JWT_SECRET: 'Missing JWT secret!\nPlease use the JWT_SECRET enviroment variable to specify the JWT secret!'
+    MISSING_JWT_SECRET: 'Missing JWT secret!\nPlease use the JWT_SECRET enviroment variable to specify the JWT secret!',
+    MISSING_SERVER_HOSTNAME: 'Missing server hostname!\nPlease use the SERVER_HOSTNAME enviroment variable to specify the server hostame!',
+    MISSING_MAILGUN_DOMAIN: 'Missing Mailgun domain!\nPlease use the MAILGUN_DOMAIN enviroment variable to specify the Mailgun domain!',
+    MISSING_MAILGUN_USERNAME: 'Missing Mailgun username!\nPlease use the MAILGUN_USERNAME enviroment variable to specify the Mailgun username!',
+    MISSING_MAILGUN_PASSWORD: 'Missing Mailgun password!\nPlease use the MAILGUN_PASSWORD enviroment variable to specify the Mailgun password!',
+    MAILGUN_EU: 'Missing Mailgun EU!\nPlease use the MAILGUN_EU enviroment variable to specify the Mailgun EU!',
+    SERVER_PORT_ISNAN: 'Server port parsing error!\nPlease use the SERVER_PORT enviroment variable to specify a valid server port!',
+    SERVER_PORT_OUT_OF_RANGE: 'Server port out of range!\nThe server port must be a number between 1 and 65535. Please use the SERVER_PORT enviroment variable to specify a valid server port!'
 };
 
 export const LOG_WARN = {
@@ -20,7 +27,7 @@ export const WEB_ERRORS = {
     },
     SIGNUP_ERROR: {
         code: 101,
-        message: 'Server side error, please try again later'
+        message: 'Server side error, please try again later :('
     },
     UNAUTHARIZED_ACCESS: {
         code: 102,
@@ -28,7 +35,7 @@ export const WEB_ERRORS = {
     },
     INVALID_VERIFICAION_TOKEN: {
         code: 104,
-        message: 'Invalid, expired or already verified token submitted'
+        message: 'Invalid, expired or already verified token submitted.'
     },
     EVERYTHING_IS_ON_FIRE: {
         code: 999,

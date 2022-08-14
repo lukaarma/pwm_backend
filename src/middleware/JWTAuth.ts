@@ -22,9 +22,7 @@ export default function (exludedPaths?: Array<string>):
         }
         else if (req.headers.authorization) {
             try {
-                // NOTE: already checked during initialization
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                req.jwtInfo = jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET!) as JwtInfo;
+                req.jwtInfo = jwt.verify(req.headers.authorization.split(' ')[1], process.env.JWT_SECRET) as JwtInfo;
                 logger.debug(`[JWTauth] verified JWT token on path '${req.path}'`);
 
                 return next();

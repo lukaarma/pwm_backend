@@ -10,7 +10,7 @@ export function initLogger(): void {
     if (process.env.LOG_LEVEL && levels.includes(process.env.LOG_LEVEL)) {
         winston.level = process.env.LOG_LEVEL;
     }
-    else if (!process.env.LOG_LEVEL && process.env.NODE_ENV !== 'production') {
+    else if (process.env.NODE_ENV !== 'production') {
         winston.level = 'verbose';
     }
 

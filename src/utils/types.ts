@@ -16,6 +16,25 @@ declare module 'express-serve-static-core' {
     }
 }
 
+// extending process.env, cannot delcare module because not exported as module in @types/node
+declare global {
+    // eslint-disable-next-line @typescript-eslint/no-namespace
+    namespace NodeJS {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+        interface ProcessEnv {
+            NODE_ENV: 'development' | 'production'
+            JWT_SECRET: string,
+            SERVER_HOSTNAME: string,
+            SERVER_PORT: number,
+            MONGODB_SERVER: string,
+            MONGODB_NAME: string,
+            MAILGUN_DOMAIN: string,
+            MAILGUN_USERNAME: string,
+            MAILGUN_PASSWORD: string
+        }
+    }
+}
+
 export { JwtInfo };
 
 
