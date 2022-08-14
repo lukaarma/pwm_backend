@@ -7,11 +7,11 @@ import { User, UserVerification } from '../database/userModel';
 import VerificationToken from '../database/verificationTokenModel';
 import { WEB_ERRORS } from '../utils/messages';
 import { LoginBody, SignupBody } from '../utils/types';
+import sendVerificationEmail from '../utils/verificationEmail';
 
 
 /* TODO:
     - validate user input
-    - email validation
     - better error handling!
     - email revalidation if token timeout
 */
@@ -73,6 +73,9 @@ userRouter.post('/signup', async (req, res) => {
                 await verificationToken.save();
 
                 logger.debug(`[TOKEN] Token '${verificationToken.token}' created for account '${newUser.email}'`);
+
+                await sendVerificationEmail(newUser.email, verificationToken.token);
+                logger.debug(`[TOKEN] Verification email sent to '${newUser.email}'`);
             }).catch((err: Error) => {
                 logger.error({ message: err });
                 logger.debug(`[SIGNUP] Failed new user signup, db error '${signup.email}'`);
