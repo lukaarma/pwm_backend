@@ -39,8 +39,10 @@ const userSchema = new mongoose.Schema<IUser, UserModel>(
 
 );
 
+/* NOTE: only hash on update, when we transfer the user from
+the userVerification collection password is already hashed */
 userSchema.pre('save', async function (next) {
-    if (this.isNew || this.isModified('password')) {
+    if (!this.isNew && this.isModified('password')) {
         await bcrypt.hash(this.password, 12)
             .then(hash => {
                 logger.debug('[USER_MODEL] Password hash created');
@@ -88,9 +90,4 @@ userSchema.set('toJSON', {
 userSchema.static('build', (item) => new User(item));
 const User = mongoose.model<IUser, UserModel>('User', userSchema, 'users');
 
-/* NOTE: hack, since mongoose copies the schema we change the build method for the UserVerification
-Doing so we can save to the correct collection instanzializing "new UserVerification" instead of "new User" */
-userSchema.static('build', (item) => new UserVerification(item));
-const UserVerification = mongoose.model<IUser, UserModel>('UserVerification', userSchema, 'usersVerification');
-
-export { User, UserVerification };
+export default User;

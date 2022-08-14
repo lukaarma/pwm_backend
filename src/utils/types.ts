@@ -52,7 +52,13 @@ type SignupBody = {
     lastName: string
 }
 
-export { LoginBody, SignupBody };
+type UpdateProfileBody = {
+    password?: string,
+    firstName?: string,
+    lastName?: string
+}
+
+export { LoginBody, SignupBody, UpdateProfileBody };
 
 
 /* ===== Mongoose ===== */

@@ -3,10 +3,11 @@ import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
 import logger from 'winston';
 
-import { User, UserVerification } from '../database/userModel';
+import User from '../database/userModel';
+import UserVerification from '../database/userVerificationModel';
 import VerificationToken from '../database/verificationTokenModel';
 import { WEB_ERRORS } from '../utils/messages';
-import { LoginBody, SignupBody } from '../utils/types';
+import { LoginBody, SignupBody, UpdateProfileBody } from '../utils/types';
 import sendVerificationEmail from '../utils/verificationEmail';
 
 
@@ -14,6 +15,10 @@ import sendVerificationEmail from '../utils/verificationEmail';
     - validate user input
     - better error handling!
     - email revalidation if token timeout
+*/
+
+/* FIXME
+    - require old password for update password
 */
 const userRouter = express.Router();
 
@@ -113,18 +118,20 @@ userRouter.get('/profile', async (req, res) => {
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 userRouter.put('/profile', async (req, res) => {
-    const profile: SignupBody = req.body as SignupBody;
+    const profile: UpdateProfileBody = req.body as UpdateProfileBody;
 
     logger.verbose(`[PROFILE] Updated profile with id '${req.jwtInfo.id}'`);
 
     const user = await User.findOneAndUpdate(
         { _id: req.jwtInfo.id },
-        profile
+        profile,
+        { new: true }
     );
 
     if (user) {
         logger.debug(`[PROFILE] updated user '${user.email}' with id '${req.jwtInfo.id}':\n\t` +
-            `${user.firstName} => ${profile.firstName}\n\t${user.lastName} => ${profile.lastName}`);
+            `Changed password: ${profile.password ? 'true' : 'false'}\n\t` +
+            `New first name: ${user.firstName}\n\tNew last name: ${user.lastName}`);
 
         res.status(200).json(user.toJSON());
     }
