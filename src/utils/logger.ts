@@ -52,10 +52,10 @@ function customLogPrint(info: winston.Logform.TransformableInfo): string {
     switch (info.level) {
         case 'error': {
             if (info.fatal) {
-                return `${chalk.red('\n\n[FATAL ERROR]')} ${info.stack ?? info.message ?? 'NO ERROR INFO'}`;
+                return `${chalk.red('\n[FATAL ERROR]')} ${info.stack ?? info.message ?? 'NO ERROR INFO'}`;
             }
 
-            return `${chalk.red('\n[ERROR]')} ${info.stack ?? info.message ?? 'NO ERROR INFO'}\n`;
+            return `${chalk.red('\n[ERROR]')} ${info.stack ?? info.message ?? 'NO ERROR INFO'}`;
         }
         case 'warn': {
             return `${chalk.yellow('[WARNING]')} ${info.stack ?? info.message ?? 'NO WARNING INFO'}`;

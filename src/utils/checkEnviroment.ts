@@ -1,5 +1,5 @@
-import logger from 'winston';
 import crypto from 'crypto';
+import logger from 'winston';
 
 import { LOG_ERRORS, LOG_WARN } from '../utils/messages';
 
@@ -22,8 +22,9 @@ export default function checkEnviroment(): void {
         process.env.JWT_SECRET = crypto.randomBytes(256).toString('hex');
     }
     else if (!process.env.JWT_SECRET) {
-        logger.error(LOG_ERRORS.MISSING_JWT_SECRET);
         fatal = true;
+        logger.error(LOG_ERRORS.MISSING_JWT_SECRET, { fatal });
+
     }
 
     // Check Server Env
@@ -32,8 +33,8 @@ export default function checkEnviroment(): void {
         process.env.SERVER_HOSTNAME = 'localhost';
     }
     else if (!process.env.SERVER_HOSTNAME) {
-        logger.error(LOG_ERRORS.MISSING_SERVER_HOSTNAME);
         fatal = true;
+        logger.error(LOG_ERRORS.MISSING_SERVER_HOSTNAME, { fatal });
     }
 
     if (process.env.SERVER_PORT) {
@@ -41,12 +42,12 @@ export default function checkEnviroment(): void {
         const port = parseInt(process.env.SERVER_PORT.toString());
 
         if (isNaN(port)) {
-            logger.error(LOG_ERRORS.SERVER_PORT_ISNAN);
             fatal = true;
+            logger.error(LOG_ERRORS.SERVER_PORT_ISNAN, { fatal });
         }
         else if (port < 1 || port > 65535) {
-            logger.error(LOG_ERRORS.SERVER_PORT_OUT_OF_RANGE);
             fatal = true;
+            logger.error(LOG_ERRORS.SERVER_PORT_OUT_OF_RANGE, { fatal });
         }
         else {
             process.env.SERVER_PORT = port;
@@ -59,36 +60,32 @@ export default function checkEnviroment(): void {
 
     // Check Database Env
     if (!process.env.MONGODB_SERVER) {
-        logger.error(LOG_ERRORS.MISSING_MONGODB_SERVER);
         fatal = true;
+        logger.error(LOG_ERRORS.MISSING_MONGODB_SERVER, { fatal });
     }
     // We need a X509 certificate or username and password
     if (!process.env.MONGODB_X509 &&
         !(process.env.MONGODB_USERNAME && process.env.MONGODB_PASSWORD)) {
-        logger.error(LOG_ERRORS.MISSING_MONGODB_CREDENTIALS);
         fatal = true;
+        logger.error(LOG_ERRORS.MISSING_MONGODB_CREDENTIALS, { fatal });
     }
     if (!process.env.MONGODB_NAME) {
-        logger.error(LOG_ERRORS.MISSING_MONGODB_NAME);
         fatal = true;
+        logger.error(LOG_ERRORS.MISSING_MONGODB_NAME, { fatal });
     }
 
     // Check Mailgun Env
     if (!process.env.MAILGUN_DOMAIN) {
-        logger.error(LOG_ERRORS.MISSING_MAILGUN_DOMAIN);
         fatal = true;
+        logger.error(LOG_ERRORS.MISSING_MAILGUN_DOMAIN, { fatal });
     }
     if (!process.env.MAILGUN_USERNAME) {
-        logger.error(LOG_ERRORS.MISSING_MAILGUN_USERNAME);
         fatal = true;
+        logger.error(LOG_ERRORS.MISSING_MAILGUN_USERNAME, { fatal });
     }
     if (!process.env.MAILGUN_PASSWORD) {
-        logger.error(LOG_ERRORS.MISSING_MAILGUN_PASSWORD);
         fatal = true;
-    }
-    if (!process.env.MAILGUN_EU) {
-        logger.error(LOG_ERRORS.MAILGUN_EU);
-        fatal = true;
+        logger.error(LOG_ERRORS.MISSING_MAILGUN_PASSWORD, { fatal });
     }
 
     // This is fine.

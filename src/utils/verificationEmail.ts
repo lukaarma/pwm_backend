@@ -32,6 +32,6 @@ async function sendMail(email: string, subject: string, body: string): Promise<v
         method: 'POST',
         headers: headers,
         body: form
-    }).then(async (res) => logger.debug('[SEND_EMAIL] ' + JSON.stringify(await res.json(), null, 4))
+    }).then(async (res) => logger.debug('[SEND_EMAIL] ' + await res.text())
     ).catch((err: Error) => logger.error({ message: err }));
 }
