@@ -1,6 +1,10 @@
-# backend of PWM (PassWordManager), Project by [lukaarma] and [Lorenzo Romio]
+# Backend of PWM - PassWordManager
 
-PWM is a simple password manager website that encrypts locally your credentials and syncs them accros all your devices.
+Project by [lukaarma] and [Lorenzo Romio]
+
+PWM is a simple password manager website that encrypts locally your credentials and syncs them across all your devices.
+
+See the [Security Whitepaper] to check for yourself how we handle and store your credentials.
 
 ## Available enviroment variables
 
@@ -8,7 +12,7 @@ PWM is a simple password manager website that encrypts locally your credentials 
 
 | Variable name  | Possible values | Default | Required | Description |
 | -------------- | --------------- | ----- | :------: | ----------- |
-| NODE_ENV  | 'production', 'development' | 'development' | ❌ | Set the enviroment in which the server will be deployed.<br> Development will enable more detailed logs. |
+| NODE_ENV  | 'production', 'development' | 'development' | ❌ | Set the environment in which the server will be deployed.<br> Development will enable more detailed logs. |
 | LOG_LEVEL  | 'debug', 'verbose', 'info', 'warn', 'error' | 'info' or 'verbose' | ❌ | Set the console log level, log files are unaffected. Default 'info' in production, 'verbose' in development |
 | JWT_SECRET | String | undefined | ❔ | Set the JWT secret for the bearer tokens.<br> ❔ This is required only in production |
 
@@ -39,5 +43,6 @@ PWM is a simple password manager website that encrypts locally your credentials 
 | MAILGUN_PASSWORD | String | undefined | ✅ | Set the Mailgun API password |
 | MAILGUN_EU | Boolean | false | ❌ | Set if the Mailgun domain resides in Europe |
 
-[lukaarma]: https://github.com/lukaarma
-[Lorenzo Romio]: https://github.com/lorenzoromio
+[lukaarma]: (https://github.com/lukaarma)
+[Lorenzo Romio]: (https://github.com/lorenzoromio)
+[Security Whitepaper]: ./specifications/Security%20Whitepaper.md
