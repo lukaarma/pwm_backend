@@ -1,9 +1,10 @@
 import crypto from 'crypto';
 import logger from 'winston';
 
-import { LOG_ERRORS, LOG_WARN } from '../utils/messages';
+import { LOG_ERRORS, LOG_WARN } from './messages';
 
-export default function checkEnviroment(): void {
+
+export default function (): void {
     const availableVars = ['NODE_ENV', 'LOG_LEVEL', 'SERVER_HOSTNAME', 'SERVER_PORT', 'SERVER_REVERSE_PROXY', 'MONGODB_SERVER', 'MONGODB_USERNAME', 'MONGODB_X509', 'MONGODB_NAME', 'MAILGUN_DOMAIN', 'MAILGUN_USERNAME', 'MAILGUN_EU'];
     let fatal = false;
 

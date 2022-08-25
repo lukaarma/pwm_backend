@@ -6,7 +6,7 @@ import logger from 'winston';
 import { initDatabase } from './database/database';
 import JWTAuth from './middleware/JWTAuth';
 import userRouter from './routers/userRouter';
-import checkEnviroment from './utils/checkEnviroment';
+import checkEnvironment from './utils/checkEnvironment';
 import { initLogger } from './utils/logger';
 
 
@@ -24,9 +24,9 @@ TODO:
 initLogger();
 
 // Check and initialize relevant env variables
-checkEnviroment();
+checkEnvironment();
 
-logger.info('Initalizing database...');
+logger.info('Initializing database...');
 await initDatabase();
 logger.info('Database connection initialized! Initializing server...');
 
