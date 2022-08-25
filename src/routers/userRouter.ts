@@ -31,7 +31,7 @@ userRouter.post('/login', async (req, res) => {
 
     const user = await User.findOne({ email: login.email });
 
-    if (user && (await user.validatePassword(login.password))) {
+    if (user && (await user.validateMPH(login.password))) {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         logger.debug(`[LOGIN] bearer token created for ${login.email}`);
 
@@ -57,7 +57,7 @@ userRouter.post('/signup', async (req, res) => {
     if (!await User.exists({ email: signup.email }) || !await UserVerification.exists({ email: signup.email })) {
         const newUser = UserVerification.build({
             email: signup.email,
-            password: signup.password,
+            masterPwdHash: signup.masterPwdHash,
             firstName: signup.firstName,
             lastName: signup.lastName
         });
@@ -156,7 +156,7 @@ userRouter.get('/verify/:token', async (req, res) => {
 
             const verifiedUser = User.build({
                 email: user.email,
-                password: user.password,
+                masterPwdHash: user.masterPwdHash,
                 firstName: user.firstName,
                 lastName: user.lastName
             });

@@ -31,6 +31,6 @@ verificationTokenSchema.index({ createdAt: 1 }, { expires: '4h' });
 verificationTokenSchema.static('build', (item) => new VerificationToken(item));
 
 const VerificationToken = mongoose.model<IVerificationToken, VerificationTokenModel>(
-    'VerificationToken', verificationTokenSchema, 'verificationTokens');
+    'VerificationToken', verificationTokenSchema, 'VerificationTokens');
 
 export default VerificationToken;

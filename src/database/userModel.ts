@@ -5,7 +5,11 @@ import logger from 'winston';
 import { IUser, IUserToJSON, UserModel } from '../utils/types';
 
 
-// TODO: consider upping bcrypt round to 13
+/*
+TODO:
+    - consider upping bcrypt round to 13
+    - consider merging userModel.ts and userVerificationModel.ts
+*/
 
 // create the schema for the database using the interface and the model
 const userSchema = new mongoose.Schema<IUser, UserModel>(
@@ -15,7 +19,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel>(
             required: true,
             unique: true
         },
-        password: {
+        masterPwdHash: {
             type: String,
             required: true
         },
@@ -31,8 +35,8 @@ const userSchema = new mongoose.Schema<IUser, UserModel>(
     {
         timestamps: true,
         methods: {
-            validatePassword(candidate: string): Promise<boolean> {
-                return bcrypt.compare(candidate, this.password);
+            validateMPH(candidate: string): Promise<boolean> {
+                return bcrypt.compare(candidate, this.masterPwdHash);
             }
         }
     },
@@ -43,10 +47,10 @@ const userSchema = new mongoose.Schema<IUser, UserModel>(
 the userVerification collection password is already hashed */
 userSchema.pre('save', async function (next) {
     if (!this.isNew && this.isModified('password')) {
-        await bcrypt.hash(this.password, 12)
+        await bcrypt.hash(this.masterPwdHash, 12)
             .then(hash => {
                 logger.debug('[USER_MODEL] Password hash created');
-                this.password = hash;
+                this.masterPwdHash = hash;
             })
             .catch(err => {
                 return next(err as Error);
@@ -79,7 +83,7 @@ userSchema.pre('findOneAndUpdate', async function (next) {
 userSchema.set('toJSON', {
     versionKey: false,
     transform: (_, ret: IUserToJSON) => {
-        delete ret.password;
+        delete ret.masterPwdHash;
         delete ret._id;
         delete ret.createdAt;
         delete ret.updatedAt;
@@ -88,6 +92,6 @@ userSchema.set('toJSON', {
 
 // add static build method used to create new users and typecheck them with Typescript
 userSchema.static('build', (item) => new User(item));
-const User = mongoose.model<IUser, UserModel>('User', userSchema, 'users');
+const User = mongoose.model<IUser, UserModel>('User', userSchema, 'Users');
 
 export default User;

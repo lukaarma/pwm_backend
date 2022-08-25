@@ -5,7 +5,11 @@ import logger from 'winston';
 import { IUser, UserModel } from '../utils/types';
 
 
-// TODO: consider upping bcrypt round to 13
+/*
+TODO:
+    - consider upping bcrypt round to 13
+    - consider merging userModel.ts and userVerificationModel.ts
+*/
 
 // create the schema for the database using the interface and the model
 const userVerificationSchema = new mongoose.Schema<IUser, UserModel>(
@@ -15,7 +19,7 @@ const userVerificationSchema = new mongoose.Schema<IUser, UserModel>(
             required: true,
             unique: true
         },
-        password: {
+        masterPwdHash: {
             type: String,
             required: true
         },
@@ -31,19 +35,19 @@ const userVerificationSchema = new mongoose.Schema<IUser, UserModel>(
     {
         timestamps: {
             createdAt: true,
-            updatedAt: false
+            updatedAt: true
         }
     },
 
 );
-userVerificationSchema.index({ createdAt: 1 }, { expires: '4h' });
+userVerificationSchema.index({ updatedAt: 1 }, { expires: '4h' });
 
 userVerificationSchema.pre('save', async function (next) {
     if (this.isNew || this.isModified('password')) {
-        await bcrypt.hash(this.password, 12)
+        await bcrypt.hash(this.masterPwdHash, 12)
             .then(hash => {
                 logger.debug('[USER_VERIFICATION_MODEL] Password hash created');
-                this.password = hash;
+                this.masterPwdHash = hash;
             })
             .catch(err => {
                 return next(err as Error);
@@ -52,6 +56,7 @@ userVerificationSchema.pre('save', async function (next) {
 });
 
 userVerificationSchema.static('build', (item) => new UserVerification(item));
-const UserVerification = mongoose.model<IUser, UserModel>('UserVerification', userVerificationSchema, 'usersVerification');
+const UserVerification = mongoose.model<IUser, UserModel>(
+    'UserVerification', userVerificationSchema, 'UsersVerification');
 
 export default UserVerification;

@@ -47,14 +47,14 @@ type LoginBody = {
 
 type SignupBody = {
     email: string,
-    password: string,
+    masterPwdHash: string,
     firstName: string,
     lastName: string
 }
 
 type UpdateProfileBody = {
-    password?: string,
-    firstName?: string,
+    masterPwdHash?: string,
+    firstName: string,
     lastName?: string
 }
 
@@ -66,7 +66,7 @@ export { LoginBody, SignupBody, UpdateProfileBody };
 // Create Typescipt interface that reflects the Mongoose schema
 type IUser = {
     email: string,
-    password: string,
+    masterPwdHash: string,
     firstName: string,
     lastName: string
 }
@@ -74,9 +74,9 @@ type IUser = {
 // JSON serialization object with optional fields to remove them
 type IUserToJSON = {
     email: string,
-    password?: string,
+    masterPwdHash?: string,
     firstName: string,
-    lastName: string
+    lastName: string,
     _id?: string,
     createdAt?: Date,
     updatedAt?: Date
@@ -84,30 +84,31 @@ type IUserToJSON = {
 
 // Create interface for the method added to the document
 type IUserMethods = {
-    validatePassword(candidate: string): Promise<boolean>;
+    // validate Master Password Hashs
+    validateMPH(candidate: string): Promise<boolean>
 }
 
 // Create Mongoose model that knows the signature of
 // the new static methods added to the model and the document
 type UserModel = mongoose.Model<IUser, unknown, IUserMethods> & {
     build(item: IUser): mongoose.Document<IUser> & IUser & {
-        _id: mongoose.Types.ObjectId;
+        _id: mongoose.Types.ObjectId
     }
-};
+}
 
 export { IUser, IUserToJSON, UserModel };
 
 // Create Typescipt interface that reflects the Mongoose schema for verification token
 type IVerificationToken = {
-    token: string,
-    userId: mongoose.Types.ObjectId
-};
+    userId: mongoose.Types.ObjectId,
+    token: string
+}
 
 type VerificationTokenModel = mongoose.Model<IVerificationToken, unknown, unknown> & {
     build(item: IVerificationToken): mongoose.Document<IVerificationToken> & IVerificationToken & {
-        _id: mongoose.Types.ObjectId;
+        _id: mongoose.Types.ObjectId
     }
-};
+}
 
 export { IVerificationToken, VerificationTokenModel };
 
