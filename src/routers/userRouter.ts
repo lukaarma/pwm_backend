@@ -8,77 +8,87 @@ import User from '../database/userModel';
 import UserVerification from '../database/userVerificationModel';
 import VerificationToken from '../database/verificationTokenModel';
 import { WEB_ERRORS, WEB_MESSAGES } from '../utils/messages';
-import { SignupBody, UpdateProfileBody, SendVerificationBody, LoginBody } from '../utils/types';
+import { loginSchema, SendVerificationSchema, signupSchema, updateProfileSchema, verificationTokenSchema } from '../utils/validators';
 import sendVerificationEmail from '../utils/verificationEmail';
 
 
-
 /* TODO:
-    - validate user input
     - better error handling!
     - email revalidation if token timeout
+    - password update
 */
 
-/* FIXME
-    - require old password for update password
-*/
 const userRouter = express.Router();
 
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 userRouter.post('/login', async (req, res) => {
-    const login: LoginBody = req.body as LoginBody;
+    const { error, value } = loginSchema.validate(req.body, { stripUnknown: true });
 
-    logger.verbose(`[LOGIN] New login request from ${login.email}`);
+    if (!error && value) {
+        logger.verbose(`[LOGIN] New login request from ${value.email}`);
 
-    const user = await User.findOne({ email: login.email });
+        const user = await User.findOne({ email: value.email });
 
-    if (user && (await user.validateMPH(login.masterPwdHash))) {
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        logger.debug(`[LOGIN] bearer token created for ${login.email}`);
+        if (user && (await user.validateMPH(value.masterPwdHash))) {
+            const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            logger.debug(`[LOGIN] bearer token created for ${value.email}`);
 
-        res.setHeader('Authorization', `Bearer ${token}`);
-        res.status(200).json({
-            firstName: user.firstName
-        });
+            res.setHeader('Authorization', `Bearer ${token}`);
+            res.status(200).json({
+                firstName: user.firstName
+            });
+        }
+        else {
+            logger.debug(`[LOGIN] login failed for ${value.email}: ${user ? 'Wrong password' : 'Wrong email'}`);
+
+            res.status(401).json(WEB_ERRORS.LOGIN_FAILED);
+        }
     }
     else {
-        logger.debug(`[LOGIN] login failed for ${login.email}: ${user ? 'Wrong password' : 'Wrong email'}`);
+        logger.error(`[LOGIN] Bad request! ${error.message}`);
 
-        res.status(401).json(WEB_ERRORS.LOGIN_FAILED);
+        res.status(400).json(WEB_ERRORS.LOGIN_BAD_REQUEST(error.message));
     }
 });
 
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 userRouter.post('/signup', async (req, res) => {
-    const signup: SignupBody = req.body as SignupBody;
+    const { error, value } = signupSchema.validate(req.body, { stripUnknown: true });
 
-    logger.verbose(`[SIGNUP] New signup request: '${signup.email}' (${signup.lastName} ${signup.firstName})`);
+    if (!error && value) {
+        logger.verbose(`[SIGNUP] New signup request: '${value.email}' (${value.lastName} ${value.firstName})`);
 
-    if (!await User.exists({ email: signup.email })) {
-        // with 'upsert: true' if no document is found it will insert a new one
-        await UserVerification.findOneAndUpdate(
-            { email: signup.email },
-            signup,
-            { runValidators: true, new: true, upsert: true }
-        ).then(async (newUser) => {
-            logger.debug(`[SIGNUP] New user signup '${signup.email}'`);
+        if (!await User.exists({ email: value.email })) {
+            // with 'upsert: true' if no document is found it will insert a new one
+            await UserVerification.findOneAndUpdate(
+                { email: value.email },
+                value,
+                { runValidators: true, new: true, upsert: true }
+            ).then(async (newUser) => {
+                logger.debug(`[SIGNUP] New user signup '${value.email}'`);
 
-            res.status(200).json(WEB_MESSAGES.VERIFICATION_TOKEN_SENT(signup.email));
+                res.status(200).json(WEB_MESSAGES.VERIFICATION_TOKEN_SENT(value.email));
 
-            await createVerificationToken(newUser._id, signup.email);
-        }).catch((err: Error) => {
-            logger.error({ message: err });
-            logger.debug(`[SIGNUP] Failed new user signup, db error '${signup.email}'`);
+                await createVerificationToken(newUser._id, value.email);
+            }).catch((err: Error) => {
+                logger.error({ message: err });
+                logger.debug(`[SIGNUP] Failed new user signup, db error '${value.email}'`);
 
-            return res.status(500).json(WEB_ERRORS.SIGNUP_ERROR);
-        });
+                return res.status(500).json(WEB_ERRORS.SIGNUP_ERROR);
+            });
+        }
+        else {
+            logger.warn(`[SIGNUP] Failed new user signup, already exists '${value.email}'`);
+
+            res.status(200).json(WEB_MESSAGES.VERIFICATION_TOKEN_SENT(value.email));
+        }
     }
     else {
-        logger.warn(`[SIGNUP] Failed new user signup, already exists '${signup.email}'`);
+        logger.error(`[SIGNUP] Bad request! ${error.message}`);
 
-        res.status(200).json(WEB_MESSAGES.VERIFICATION_TOKEN_SENT(signup.email));
+        res.status(400).json(WEB_ERRORS.SIGNUP_BAD_REQUEST(error.message));
     }
 });
 
@@ -102,86 +112,114 @@ userRouter.get('/profile', async (req, res) => {
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 userRouter.put('/profile', async (req, res) => {
-    const profile: UpdateProfileBody = req.body as UpdateProfileBody;
+    const { error, value } = updateProfileSchema.validate(req.body);
 
-    logger.verbose(`[PROFILE] Updated profile with id '${req.jwtInfo.id}'`);
+    if (!error && value) {
+        logger.verbose(`[PROFILE] Updated profile with id '${req.jwtInfo.id}'`);
 
-    const user = await User.findOneAndUpdate(
-        { _id: req.jwtInfo.id },
-        { firstName: profile.firstName, lastName: profile.lastName },
-        { new: true }
-    );
+        const user = await User.findOneAndUpdate(
+            { _id: req.jwtInfo.id },
+            { firstName: value.firstName, lastName: value.lastName },
+            { new: true }
+        );
 
-    if (user) {
-        logger.debug(`[PROFILE] updated user '${user.email}' with id '${req.jwtInfo.id}':\n\t` +
-            `New first name: ${user.firstName}\n\tNew last name: ${user.lastName}`);
+        if (user) {
+            logger.debug(`[PROFILE] updated user '${user.email}' with id '${req.jwtInfo.id}':\n\t` +
+                `New first name: ${user.firstName}\n\tNew last name: ${user.lastName}`);
 
-        res.status(200).json(user.toJSON());
+            res.status(200).json(user.toJSON());
+        }
+        else {
+            logger.error(`[PROFILE] This is fine. Request in auth route '${req.path}' with JWT and invalid id.`);
+            res.status(500).json(WEB_ERRORS.EVERYTHING_IS_ON_FIRE);
+        }
     }
     else {
-        logger.error(`[PROFILE] This is fine. Request in auth route '${req.path}' with JWT and invalid id.`);
-        res.status(500).json(WEB_ERRORS.EVERYTHING_IS_ON_FIRE);
+        logger.error(`[PROFILE] Bad request! ${error.message}`);
+
+        res.status(400).json(WEB_ERRORS.UPDATE_PROFILE_BAD_REQUEST(error.message));
     }
 });
 
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 userRouter.post('/verify/sendVerification', async (req, res) => {
-    const { email } = req.body as SendVerificationBody;
+    const { error, value } = SendVerificationSchema.validate(req.body);
 
-    logger.verbose(`[VERIFY] Requested new verification token for '${email}'`);
+    if (!error && value) {
+        const { email } = value;
 
-    const { _id } = await UserVerification.exists({ email }) ?? { _id: null };
-    if (_id) {
-        await createVerificationToken(_id, email);
+        logger.verbose(`[VERIFY] Requested new verification token for '${email}'`);
+
+        const { _id } = await UserVerification.exists({ email }) ?? { _id: null };
+        if (_id) {
+            await createVerificationToken(_id, email);
+        }
+
+        res.status(200).send(WEB_MESSAGES.VERIFICATION_TOKEN_SENT(email));
     }
+    else {
+        logger.error(`[VERIFY] Bad request! ${error.message}`);
 
-    res.status(200).send(WEB_MESSAGES.VERIFICATION_TOKEN_SENT(email));
+        res.status(400).json(WEB_ERRORS.SEND_VERIFICATION_BAD_REQUEST(error.message));
+    }
 });
+
 
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 userRouter.get('/verify/:token', async (req, res) => {
-    logger.verbose(`[VERIFY] Requested verification for token '${req.params.token}'`);
+    const { error } = verificationTokenSchema.validate(req.params.token);
 
-    const token = await VerificationToken.findOne({ token: req.params.token });
-    if (token) {
-        logger.debug(`[VERIFY] Found token '${token.token}' for userId '${token.userId.toString()}'`);
+    if (!error) {
+        logger.verbose(`[VERIFY] Requested verification for token '${req.params.token}'`);
 
-        const userVerification = await UserVerification.findOne({ _id: token.userId });
-        if (userVerification) {
-            logger.debug(`[VERIFY] Found user '${userVerification.email}' with userId '${userVerification.id}'`);
+        const token = await VerificationToken.findOne({ token: req.params.token });
+        if (token) {
+            logger.debug(`[VERIFY] Found token '${token.token}' for userId '${token.userId.toString()}'`);
 
-            const user = User.build({
-                email: userVerification.email,
-                masterPwdHash: userVerification.masterPwdHash,
-                firstName: userVerification.firstName,
-                lastName: userVerification.lastName
-            });
+            const userVerification = await UserVerification.findOne({ _id: token.userId });
+            if (userVerification) {
+                logger.debug(`[VERIFY] Found user '${userVerification.email}' with userId '${userVerification.id}'`);
 
-            await user.save();
-            await userVerification.remove();
-            // delete all floating token for the user
-            await VerificationToken.deleteMany({ _id: token.userId });
+                const user = User.build({
+                    email: userVerification.email,
+                    masterPwdHash: userVerification.masterPwdHash,
+                    firstName: userVerification.firstName,
+                    lastName: userVerification.lastName
+                });
 
-            logger.debug(`[VERIFY] User '${user.email}' verified`);
+                await user.save();
+                await userVerification.remove();
+                // delete all floating token for the user
+                await VerificationToken.deleteMany({ _id: token.userId });
 
-            res.status(301).redirect('/login');
+                logger.debug(`[VERIFY] User '${user.email}' verified`);
 
-            // res.status(200).send(WEB_MESSAGES.PROFILE_VERIFIED);
+                res.status(301).redirect('/login');
+
+                // res.status(200).send(WEB_MESSAGES.PROFILE_VERIFIED);
+            }
+            else {
+                logger.error(`[VERIFY] This is fine. Received valid token with '${token.token}' invalid userId '${token.userId.toString()}'`);
+                res.status(500).json(WEB_ERRORS.EVERYTHING_IS_ON_FIRE);
+            }
         }
         else {
-            logger.error(`[VERIFY] This is fine. Received valid token with '${token.token}' invalid userId '${token.userId.toString()}'`);
-            res.status(500).json(WEB_ERRORS.EVERYTHING_IS_ON_FIRE);
+            logger.debug(`[VERIFY] Expired or already verified token submitted '${req.params.token}'`);
+            res.status(400).json(WEB_ERRORS.INVALID_VERIFICATION_TOKEN);
         }
     }
     else {
-        logger.debug(`[VERIFY] Invalid, expired or already verified token submitted '${req.params.token}'`);
-        res.status(400).json(WEB_ERRORS.INVALID_VERIFICATION_TOKEN);
+        logger.error(`[VERIFY] Bad request! ${error.message}`);
+
+        res.status(400).json(WEB_ERRORS.VERIFY_TOKEN_BAD_REQUEST(error.message));
     }
+
 });
 
 export default userRouter;
+
 
 async function createVerificationToken(userId: mongoose.Types.ObjectId, email: string): Promise<void> {
 

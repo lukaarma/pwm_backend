@@ -31,6 +31,11 @@ export const WEB_ERRORS = {
     SAVE_PSK_ERROR: make(350, 'Error saving new Protected Symmetric Key, please try again later'),
     DUPLICATE_PSK: make(360, 'A Protected Symmetric Key already exists for this user'),
     SYNTAX_BAD_REQUEST: (message: string): JSONResponse => make(600, message),
+    LOGIN_BAD_REQUEST: (message: string): JSONResponse => make(601, message),
+    SIGNUP_BAD_REQUEST: (message: string): JSONResponse => make(602, message),
+    UPDATE_PROFILE_BAD_REQUEST: (message: string): JSONResponse => make(603, message),
+    SEND_VERIFICATION_BAD_REQUEST: (message: string): JSONResponse => make(604, message),
+    VERIFY_TOKEN_BAD_REQUEST: (message: string): JSONResponse => make(605, message),
     EVERYTHING_IS_ON_FIRE: {
         code: 999,
         message: 'This is fine. Request in auth route with valid JWT and invalid user id'
