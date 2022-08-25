@@ -1,14 +1,16 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
+import mongoose from 'mongoose';
+import { v4 as UUIDv4 } from 'uuid';
 import logger from 'winston';
 
 import User from '../database/userModel';
 import UserVerification from '../database/userVerificationModel';
 import VerificationToken from '../database/verificationTokenModel';
-import { WEB_ERRORS } from '../utils/messages';
-import { LoginBody, SignupBody, UpdateProfileBody } from '../utils/types';
+import { WEB_ERRORS, WEB_MESSAGES } from '../utils/messages';
+import { SignupBody, UpdateProfileBody, SendVerificationBody, LoginBody } from '../utils/types';
 import sendVerificationEmail from '../utils/verificationEmail';
+
 
 
 /* TODO:
@@ -31,7 +33,7 @@ userRouter.post('/login', async (req, res) => {
 
     const user = await User.findOne({ email: login.email });
 
-    if (user && (await user.validateMPH(login.password))) {
+    if (user && (await user.validateMPH(login.masterPwdHash))) {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
         logger.debug(`[LOGIN] bearer token created for ${login.email}`);
 
@@ -54,48 +56,29 @@ userRouter.post('/signup', async (req, res) => {
 
     logger.verbose(`[SIGNUP] New signup request: '${signup.email}' (${signup.lastName} ${signup.firstName})`);
 
-    if (!await User.exists({ email: signup.email }) ||
-        !await UserVerification.exists({ email: signup.email })) {
-        const newUser = UserVerification.build({
-            email: signup.email,
-            masterPwdHash: signup.masterPwdHash,
-            firstName: signup.firstName,
-            lastName: signup.lastName
+    if (!await User.exists({ email: signup.email })) {
+        // with 'upsert: true' if no document is found it will insert a new one
+        await UserVerification.findOneAndUpdate(
+            { email: signup.email },
+            signup,
+            { runValidators: true, new: true, upsert: true }
+        ).then(async (newUser) => {
+            logger.debug(`[SIGNUP] New user signup '${signup.email}'`);
+
+            res.status(200).json(WEB_MESSAGES.VERIFICATION_TOKEN_SENT(signup.email));
+
+            await createVerificationToken(newUser._id, signup.email);
+        }).catch((err: Error) => {
+            logger.error({ message: err });
+            logger.debug(`[SIGNUP] Failed new user signup, db error '${signup.email}'`);
+
+            return res.status(500).json(WEB_ERRORS.SIGNUP_ERROR);
         });
-
-        await newUser.save()
-            .then(async () => {
-                logger.debug(`[SIGNUP] New user signup '${signup.email}'`);
-
-                res.status(200).json({
-                    code: 103,
-                    message: `A confirmation email was sent to '${signup.email}'. Please check your inbox.'`
-                });
-
-                const verificationToken = VerificationToken.build({
-                    token: uuidv4(),
-                    userId: newUser._id
-                });
-                await verificationToken.save();
-
-                logger.debug(`[TOKEN] Token '${verificationToken.token}' created for account '${newUser.email}'`);
-
-                await sendVerificationEmail(newUser.email, verificationToken.token);
-                logger.debug(`[TOKEN] Verification email sent to '${newUser.email}'`);
-            }).catch((err: Error) => {
-                logger.error({ message: err });
-                logger.debug(`[SIGNUP] Failed new user signup, db error '${signup.email}'`);
-
-                return res.status(500).json(WEB_ERRORS.SIGNUP_ERROR);
-            });
     }
     else {
-        logger.debug(`[SIGNUP] Failed new user signup, already exists '${signup.email}'`);
+        logger.warn(`[SIGNUP] Failed new user signup, already exists '${signup.email}'`);
 
-        res.status(400).json({
-            code: 103,
-            message: `A confirmation email was sent to '${signup.email}'. Please check your inbox.'`
-        });
+        res.status(200).json(WEB_MESSAGES.VERIFICATION_TOKEN_SENT(signup.email));
     }
 });
 
@@ -143,6 +126,21 @@ userRouter.put('/profile', async (req, res) => {
 
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
+userRouter.post('/verify/sendVerification', async (req, res) => {
+    const { email } = req.body as SendVerificationBody;
+
+    logger.verbose(`[VERIFY] Requested new verification token for '${email}'`);
+
+    const { _id } = await UserVerification.exists({ email }) ?? { _id: null };
+    if (_id) {
+        await createVerificationToken(_id, email);
+    }
+
+    res.status(200).send(WEB_MESSAGES.VERIFICATION_TOKEN_SENT(email));
+});
+
+// NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 userRouter.get('/verify/:token', async (req, res) => {
     logger.verbose(`[VERIFY] Requested verification for token '${req.params.token}'`);
 
@@ -150,34 +148,51 @@ userRouter.get('/verify/:token', async (req, res) => {
     if (token) {
         logger.debug(`[VERIFY] Found token '${token.token}' for userId '${token.userId.toString()}'`);
 
-        const user = await UserVerification.findOne({ _id: token.userId });
-        if (user) {
-            logger.debug(`[VERIFY] Found user '${user.email}' with userId '${user.id}'`);
+        const userVerification = await UserVerification.findOne({ _id: token.userId });
+        if (userVerification) {
+            logger.debug(`[VERIFY] Found user '${userVerification.email}' with userId '${userVerification.id}'`);
 
-            const verifiedUser = User.build({
-                email: user.email,
-                masterPwdHash: user.masterPwdHash,
-                firstName: user.firstName,
-                lastName: user.lastName
+            const user = User.build({
+                email: userVerification.email,
+                masterPwdHash: userVerification.masterPwdHash,
+                firstName: userVerification.firstName,
+                lastName: userVerification.lastName
             });
 
-            await verifiedUser.save();
-            await user.remove();
-            await token.remove();
+            await user.save();
+            await userVerification.remove();
+            // delete all floating token for the user
+            await VerificationToken.deleteMany({ _id: token.userId });
 
             logger.debug(`[VERIFY] User '${user.email}' verified`);
 
-            res.status(200).send();
+            res.status(301).redirect('/login');
+
+            // res.status(200).send(WEB_MESSAGES.PROFILE_VERIFIED);
         }
         else {
-            logger.error(`[VERIFY] This is fine. Recived valid token with '${token.token}' invalid userId '${token.userId.toString()}'`);
+            logger.error(`[VERIFY] This is fine. Received valid token with '${token.token}' invalid userId '${token.userId.toString()}'`);
             res.status(500).json(WEB_ERRORS.EVERYTHING_IS_ON_FIRE);
         }
     }
     else {
         logger.debug(`[VERIFY] Invalid, expired or already verified token submitted '${req.params.token}'`);
-        res.status(400).json(WEB_ERRORS.INVALID_VERIFICAION_TOKEN);
+        res.status(400).json(WEB_ERRORS.INVALID_VERIFICATION_TOKEN);
     }
 });
 
 export default userRouter;
+
+async function createVerificationToken(userId: mongoose.Types.ObjectId, email: string): Promise<void> {
+
+    const token = VerificationToken.build({
+        token: UUIDv4(),
+        userId
+    });
+
+    await token.save();
+    logger.debug(`[TOKEN] Token '${token.token}' created for account '${email}'`);
+
+    await sendVerificationEmail(email, token.token);
+    logger.debug(`[TOKEN] Verification email sent to '${email}'`);
+}

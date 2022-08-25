@@ -65,11 +65,11 @@ userSchema.pre('findOneAndUpdate', async function (next) {
         delete update.email;
     }
 
-    if (update.password) {
-        await bcrypt.hash(update.password as string, 12)
+    if (update.masterPwdHash) {
+        await bcrypt.hash(update.masterPwdHash as string, 12)
             .then(hash => {
                 logger.debug('[USER_MODEL] Password hash created');
-                update.password = hash;
+                update.masterPwdHash = hash;
             })
             .catch(err => {
                 return next(err as Error);

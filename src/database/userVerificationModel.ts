@@ -42,17 +42,23 @@ const userVerificationSchema = new mongoose.Schema<IUser, UserModel>(
 );
 userVerificationSchema.index({ updatedAt: 1 }, { expires: '4h' });
 
-userVerificationSchema.pre('save', async function (next) {
-    if (this.isNew || this.isModified('password')) {
-        await bcrypt.hash(this.masterPwdHash, 12)
+userVerificationSchema.pre('findOneAndUpdate', async function (next) {
+    const update = this.getUpdate() as mongoose.UpdateQuery<IUser>;
+
+    console.dir(this.getOptions());
+
+    if (update.masterPwdHash) {
+        await bcrypt.hash(update.masterPwdHash as string, 12)
             .then(hash => {
                 logger.debug('[USER_VERIFICATION_MODEL] Password hash created');
-                this.masterPwdHash = hash;
+                update.masterPwdHash = hash;
             })
             .catch(err => {
                 return next(err as Error);
             });
     }
+
+    this.setUpdate(update);
 });
 
 userVerificationSchema.static('build', (item) => new UserVerification(item));

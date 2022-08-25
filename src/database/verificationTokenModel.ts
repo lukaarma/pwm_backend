@@ -13,8 +13,7 @@ const verificationTokenSchema = new mongoose.Schema<IVerificationToken, Verifica
         },
         userId: {
             type: mongoose.Schema.Types.ObjectId,
-            required: true,
-            unique: true
+            required: true
         }
     },
     {
@@ -27,7 +26,7 @@ const verificationTokenSchema = new mongoose.Schema<IVerificationToken, Verifica
 
 verificationTokenSchema.index({ createdAt: 1 }, { expires: '4h' });
 
-// add static build method used to create new verification token and typecheck them with Typescript
+// add static build method used to create new verification token and typechecks them with Typescript
 verificationTokenSchema.static('build', (item) => new VerificationToken(item));
 
 const VerificationToken = mongoose.model<IVerificationToken, VerificationTokenModel>(

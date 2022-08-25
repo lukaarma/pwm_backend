@@ -42,7 +42,7 @@ export { JwtInfo };
 
 type LoginBody = {
     email: string,
-    password: string
+    masterPwdHash: string
 }
 
 type SignupBody = {
@@ -57,7 +57,16 @@ type UpdateProfileBody = {
     lastName?: string
 }
 
-export { LoginBody, SignupBody, UpdateProfileBody };
+type SendVerificationBody = {
+    email: string
+}
+
+type ProtSymKeyBody = {
+    key: string,
+    IV: string
+}
+
+export { LoginBody, SignupBody, UpdateProfileBody, SendVerificationBody, ProtSymKeyBody };
 
 
 /* ===== Mongoose ===== */
