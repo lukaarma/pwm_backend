@@ -110,3 +110,27 @@ type VerificationTokenModel = mongoose.Model<IVerificationToken, unknown, unknow
 };
 
 export { IVerificationToken, VerificationTokenModel };
+
+// Create Typescipt interface that reflects the Mongoose schema for protected symmetric key
+type IProtSymKey = {
+    userId: mongoose.Types.ObjectId,
+    key: string,
+    IV: string
+}
+
+type IPSKToJSON = {
+    userId?: mongoose.Types.ObjectId,
+    key: string,
+    IV: string,
+    _id?: string,
+    createdAt?: Date,
+    updatedAt?: Date
+}
+
+type PSKModel = mongoose.Model<IProtSymKey, unknown, unknown> & {
+    build(item: IProtSymKey): mongoose.Document<IProtSymKey> & IProtSymKey & {
+        _id: mongoose.Types.ObjectId
+    }
+}
+
+export { IProtSymKey, IPSKToJSON, PSKModel };
