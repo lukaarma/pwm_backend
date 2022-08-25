@@ -33,21 +33,37 @@ Stored in the 'VerificationTokens' collection, deleted when validation occurs or
 | Property name | Type | Required | Unique | Description |
 | :-----------: | ---- | :------: | :------: | ------------ |
 | token | String | ✅ | ✅ | Generated as UUID V4 |
-| userId | ObjectId | ✅ | ✅ | Reference to the user to activate. One token per user, new one replace old one |
+| userId | ObjectId | ✅ | ❌ | Reference to the user to activate. One token per user, new one replace old one |
 | createdAt | Date | ⚙️ | ❌ | Initialized at creation, never updated, used to delete after 4h if not verified |
 | _id | ObjectId | ⚙️ | ✅ | MongoDB ObjectId |
 
 ## PROTECTED SYMMETRIC KEY
 
-Stored in the 'ProtectedSymmetricKeys'
+Stored in the 'ProtectedSymmetricKeys' collection
 
 ### SCHEMA
 
 | Property name | Type | Required | Unique | Description |
 | :-----------: | ---- | :------: | :------: | ------------ |
-| userId | ObjectId | ✅ | ✅ | Reference to the user to activate. One token per user, new one replace old one |
-| key | String | ✅ | ❌ | Symmetric Key encrypted/decrypted on client using AES-256, encoded as base64 |
-| IV | String | ✅ | ❌ | Initialization Vector sent to the client for AES-256 decription, encoded as base64 |
+| userId | ObjectId | ✅ | ✅ | Reference to the owner of the key |
+| key | String | ✅ | ❌ | Symmetric Key encrypted/decrypted on client using AES-256, encoded as hex |
+| IV | String | ✅ | ❌ | Initialization Vector sent to the client for AES-256 decription, encoded as hex |
+| createdAt | Date | ⚙️ | ❌ | Initialized at creation, never updated |
+| updatedAt | Date | ⚙️ | ❌ | Updated each time the document is updated |
+| _id | ObjectId | ⚙️ | ✅ | MongoDB ObjectId |
+
+## VAULT
+
+Stored in the 'Vaults' collection
+
+### SCHEMA
+
+| Property name | Type | Required | Unique | Description |
+| :-----------: | ---- | :------: | :------: | ------------ |
+| userId | ObjectId | ✅ | ✅ | Reference to the owner of the vault |
+| version | Number | ✅ | ❌ | Version number of the vault, only increments with each update. Updates with a version lower than the existing one are refused. |
+| lastModified | Date | ✅ | ❌ | Client timestamp of last change to the data, used to compare versions between clients |
+| data | String | ✅ | ❌ | Encrypted vault data, encoded as base64 |
 | createdAt | Date | ⚙️ | ❌ | Initialized at creation, never updated |
 | updatedAt | Date | ⚙️ | ❌ | Updated each time the document is updated |
 | _id | ObjectId | ⚙️ | ✅ | MongoDB ObjectId |
