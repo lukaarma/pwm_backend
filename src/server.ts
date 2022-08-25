@@ -4,6 +4,7 @@ import morgan from 'morgan';
 import logger from 'winston';
 
 import { initDatabase } from './database/database';
+import { expressJSONHandler } from './middleware/errorHandlers';
 import JWTAuth from './middleware/JWTAuth';
 import userRouter from './routers/userRouter';
 import checkEnvironment from './utils/checkEnvironment';
@@ -47,6 +48,7 @@ logger.info('Installing middlewares...');
 server.use(morgan('dev'));
 server.use(express.json());
 server.use(JWTAuth(excludedRoutes));
+server.use(expressJSONHandler);
 
 logger.info('Installing routers...');
 // echo development endpoint
