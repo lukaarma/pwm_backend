@@ -103,7 +103,7 @@ paths:
                     $ref: "#/components/responses/500"
 
         put:
-            summary: Update user informations
+            summary: Update user First and Last name
 
             requestBody:
                 required: true
@@ -112,8 +112,6 @@ paths:
                         schema:
                             type: object
                             properties:
-                                password:
-                                    type: string
                                 firstName:
                                     type: string
                                 lastName:

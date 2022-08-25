@@ -53,8 +53,7 @@ type SignupBody = {
 }
 
 type UpdateProfileBody = {
-    masterPwdHash?: string,
-    firstName: string,
+    firstName?: string,
     lastName?: string
 }
 

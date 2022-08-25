@@ -54,7 +54,8 @@ userRouter.post('/signup', async (req, res) => {
 
     logger.verbose(`[SIGNUP] New signup request: '${signup.email}' (${signup.lastName} ${signup.firstName})`);
 
-    if (!await User.exists({ email: signup.email }) || !await UserVerification.exists({ email: signup.email })) {
+    if (!await User.exists({ email: signup.email }) ||
+        !await UserVerification.exists({ email: signup.email })) {
         const newUser = UserVerification.build({
             email: signup.email,
             masterPwdHash: signup.masterPwdHash,
@@ -124,13 +125,12 @@ userRouter.put('/profile', async (req, res) => {
 
     const user = await User.findOneAndUpdate(
         { _id: req.jwtInfo.id },
-        profile,
+        { firstName: profile.firstName, lastName: profile.lastName },
         { new: true }
     );
 
     if (user) {
         logger.debug(`[PROFILE] updated user '${user.email}' with id '${req.jwtInfo.id}':\n\t` +
-            `Changed password: ${profile.password ? 'true' : 'false'}\n\t` +
             `New first name: ${user.firstName}\n\tNew last name: ${user.lastName}`);
 
         res.status(200).json(user.toJSON());
