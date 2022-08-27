@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>AES Tools</title>
+        <style>
+            .center {
+                width: 95%;
+                display: flex;
+                justify-content: space-between;
+                height: fit-content;
+                margin-bottom: 1rem;
+            }
+
+            .buttons {
+                display: flex;
+                margin-bottom: 1rem;
+            }
+
+            .center > input,
+            .buttons > input {
+                margin-left: 1rem;
+            }
+
+            .center > input[type="text"] {
+                width: 87%;
+            }
+
+            .buttons {
+                display: flex;
+                margin-bottom: 1rem;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="center">
+            <label for="email" style="float: left">Email:</label>
+            <input type="text" id="email" />
+        </div>
+        <div class="center">
+            <label for="password">Password:</label>
+            <input type="text" id="password" />
+        </div>
+        <div class="center">
+            <label for="masterPasswordHash">Master Password Hash:</label>
+            <input type="text" id="masterPasswordHash" />
+        </div>
+        <div class="center">
+            <label for="masterKey">Master Key:</label>
+            <input type="text" id="masterKey" />
+        </div>
+        <div class="center">
+            <label for="IV">IV:</label>
+            <input type="text" id="IV" />
+        </div>
+
+        <div class="center">
+            <label for="PSK">PSK:</label>
+            <input type="text" id="PSK" />
+        </div>
+        <div class="center">
+            <label for="symmetricKey">Symmetric Key:</label>
+            <input type="text" id="symmetricKey" />
+        </div>
+        <div class="center">
+            <label for="vaultIV">Vault IV:</label>
+            <input type="text" id="vaultIV" />
+        </div>
+        <div class="center">
+            <label for="encryptedVault">Encrypted Vault:</label>
+            <input type="text" id="encryptedVault" />
+        </div>
+        <div class="center">
+            <label for="vault">Vault:</label>
+            <input type="text" id="vault" />
+        </div>
+        <div class="buttons">
+            <input type="submit" id="randomVault" value="Random Vault" />
+        </div>
+        <div class="buttons">
+            <input type="submit" id="login" value="Login" />
+            <input type="submit" id="signup" value="Signup" />
+        </div>
+        <div class="buttons">
+            <input type="submit" id="decrypt" value="Decrypt Vault" />
+            <input type="submit" id="encrypt" value="Encrypt Vault" />
+        </div>
+
+        <script src="./scripts/index.js" type="module"></script>
+    </body>
+</html>

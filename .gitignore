@@ -3,6 +3,7 @@
 package-lock.json
 *.log
 *.pem
+public/scripts/config.js
 
 
 build/
