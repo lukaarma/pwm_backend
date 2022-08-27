@@ -90,7 +90,7 @@ userSchema.set('toJSON', {
     }
 });
 
-// add static build method used to create new users and typecheck them with Typescript
+// add static build method used to create new users and typechecks them with Typescript
 userSchema.static('build', (item) => new User(item));
 const User = mongoose.model<IUser, UserModel>('User', userSchema, 'Users');
 

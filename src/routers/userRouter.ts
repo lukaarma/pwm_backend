@@ -16,6 +16,7 @@ import sendVerificationEmail from '../utils/verificationEmail';
     - better error handling!
     - email revalidation if token timeout
     - password update
+    - return PSK, IV, Vault and Vault IV after login
 */
 
 const userRouter = express.Router();

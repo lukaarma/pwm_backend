@@ -6,7 +6,7 @@ const levels = ['debug', 'verbose', 'info', 'warn', 'error'];
 
 export function initLogger(): void {
 
-    // We leave the default info level except if LOG_LEVEL set or if dev enviroment
+    // We leave the default info level except if LOG_LEVEL set or if dev environment
     if (process.env.LOG_LEVEL && levels.includes(process.env.LOG_LEVEL)) {
         winston.level = process.env.LOG_LEVEL;
     }
@@ -25,7 +25,7 @@ export function initLogger(): void {
         )
     }));
 
-    // File transports based on enviroment:
+    // File transports based on environment:
     // PRODUCTION => Errors only, never deleted
     // DEFAULT DEVELOPMENT => Every message logged, wiped every run
     if (process.env.NODE_ENV === 'production') {

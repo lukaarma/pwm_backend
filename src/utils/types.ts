@@ -16,7 +16,7 @@ declare module 'express-serve-static-core' {
     }
 }
 
-// extending process.env, cannot delcare module because not exported as module in @types/node
+// extending process.env, cannot declare module because not exported as module in @types/node
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace NodeJS {
@@ -71,14 +71,14 @@ export { LoginBody, SignupBody, UpdateProfileBody, SendVerificationBody, ProtSym
 
 /* ===== Mongoose ===== */
 
-// Create Typescipt interface that reflects the Mongoose schema
+// Create Typescript interface that reflects the Mongoose schema
 type IUser = {
     email: string,
     masterPwdHash: string,
     firstName: string,
     lastName: string
 }
-// Create Typescipt interface that reflects Mongoose's
+// Create Typescript interface that reflects Mongoose's
 // JSON serialization object with optional fields to remove them
 type IUserToJSON = {
     email: string,
@@ -92,7 +92,7 @@ type IUserToJSON = {
 
 // Create interface for the method added to the document
 type IUserMethods = {
-    // validate Master Password Hashs
+    // validate Master Password Hash
     validateMPH(candidate: string): Promise<boolean>
 }
 
@@ -106,7 +106,7 @@ type UserModel = mongoose.Model<IUser, unknown, IUserMethods> & {
 
 export { IUser, IUserToJSON, UserModel };
 
-// Create Typescipt interface that reflects the Mongoose schema for verification token
+// Create Typescript interface that reflects the Mongoose schema for verification token
 type IVerificationToken = {
     userId: mongoose.Types.ObjectId,
     token: string
@@ -120,7 +120,7 @@ type VerificationTokenModel = mongoose.Model<IVerificationToken, unknown, unknow
 
 export { IVerificationToken, VerificationTokenModel };
 
-// Create Typescipt interface that reflects the Mongoose schema for protected symmetric key
+// Create Typescript interface that reflects the Mongoose schema for protected symmetric key
 type IProtSymKey = {
     userId: mongoose.Types.ObjectId,
     key: string,

@@ -35,7 +35,7 @@ PSKSchema.set('toJSON', {
     }
 });
 
-// add static build method used to create new users and typecheck them with Typescript
+// add static build method used to create new users and typechecks them with Typescript
 PSKSchema.static('build', (item) => new ProtSymKey(item));
 const ProtSymKey = mongoose.model<IProtSymKey, PSKModel>(
     'ProtectedSymmetricKey', PSKSchema, 'ProtectedSymmetricKeys');
