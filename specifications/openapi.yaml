@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
     title: PassWordManagerAPI
-    version: 1.2.0
+    version: 1.2.1
     description: >-
         PassWordManager API used to manage users, personal credential databases and
         the services offered to the user
@@ -51,8 +51,16 @@ paths:
                                 properties:
                                     firstName:
                                         type: string
+                                    PSK:
+                                        type: string
+                                        format: hex
+                                    IV:
+                                        type: string
+                                        format: hex
                                 required:
                                     - firstName
+                                    - PSK
+                                    - IV
                 "400":
                     $ref: "#/components/responses/400"
                 "500":
@@ -75,16 +83,24 @@ paths:
                                     format: email
                                 masterPwdHash:
                                     type: string
-                                    format: password
+                                    format: hex
                                 firstName:
                                     type: string
                                 lastName:
                                     type: string
+                                PSK:
+                                    type: string
+                                    format: hex
+                                IV:
+                                    type: string
+                                    format: hex
                             required:
                                 - email
-                                - password
+                                - masterPwdHash
                                 - firstName
                                 - lastName
+                                - PSK
+                                - IV
             responses:
                 "200":
                     $ref: "#/components/responses/200"
@@ -95,7 +111,7 @@ paths:
 
     /user/profile:
         get:
-            summary: Get user informations
+            summary: Get user information
 
             responses:
                 "200":
@@ -264,10 +280,10 @@ components:
             properties:
                 key:
                     type: string
-                    format: byte
+                    format: hex
                 IV:
                     type: string
-                    format: byte
+                    format: hex
             required:
                 - key
                 - IV

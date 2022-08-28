@@ -7,8 +7,9 @@ import logger from 'winston';
 import User from '../database/userModel';
 import UserVerification from '../database/userVerificationModel';
 import VerificationToken from '../database/verificationTokenModel';
+import ProtSymKey from '../database/PSKModel';
 import { WEB_ERRORS, WEB_MESSAGES } from '../utils/messages';
-import { loginSchema, SendVerificationSchema, signupSchema, updateProfileSchema, verificationTokenSchema } from '../utils/validators';
+import { loginSchema, sendVerificationSchema, signupSchema, updateProfileSchema, verificationTokenSchema } from '../utils/validators';
 import sendVerificationEmail from '../utils/verificationEmail';
 
 
@@ -35,10 +36,21 @@ userRouter.post('/login', async (req, res) => {
             const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
             logger.debug(`[LOGIN] bearer token created for ${value.email}`);
 
-            res.setHeader('Authorization', `Bearer ${token}`);
-            res.status(200).json({
-                firstName: user.firstName
-            });
+            const PSK = await ProtSymKey.findOne({ userId: user._id });
+
+            if (PSK) {
+                res.setHeader('Authorization', `Bearer ${token}`);
+
+                res.status(200).json({
+                    firstName: user.firstName,
+                    PSK: PSK.data,
+                    IV: PSK.IV
+                });
+            }
+            else {
+                logger.warn(`[LOGIN] login failed for ${value.email}: missing PSK`);
+                res.status(401).json(WEB_ERRORS.MISSING_PSK);
+            }
         }
         else {
             logger.debug(`[LOGIN] login failed for ${value.email}: ${user ? 'Wrong password' : 'Wrong email'}`);
@@ -145,7 +157,7 @@ userRouter.put('/profile', async (req, res) => {
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 userRouter.post('/verify/sendVerification', async (req, res) => {
-    const { error, value } = SendVerificationSchema.validate(req.body);
+    const { error, value } = sendVerificationSchema.validate(req.body);
 
     if (!error && value) {
         const { email } = value;
@@ -190,16 +202,23 @@ userRouter.get('/verify/:token', async (req, res) => {
                     lastName: userVerification.lastName
                 });
 
-                await user.save();
-                await userVerification.remove();
-                // delete all floating token for the user
-                await VerificationToken.deleteMany({ _id: token.userId });
+                const PSK = ProtSymKey.build({
+                    userId: user._id,
+                    IV: userVerification.IV,
+                    data: userVerification.PSK
+                });
+
+                await Promise.all([
+                    user.save(),
+                    PSK.save(),
+                    userVerification.remove(),
+                    // delete all floating token for the user
+                    VerificationToken.deleteMany({ userId: token.userId })
+                ]);
 
                 logger.debug(`[VERIFY] User '${user.email}' verified`);
 
                 res.status(301).redirect('/login');
-
-                // res.status(200).send(WEB_MESSAGES.PROFILE_VERIFIED);
             }
             else {
                 logger.error(`[VERIFY] This is fine. Received valid token with '${token.token}' invalid userId '${token.userId.toString()}'`);
@@ -216,7 +235,6 @@ userRouter.get('/verify/:token', async (req, res) => {
 
         res.status(400).json(WEB_ERRORS.VERIFY_TOKEN_BAD_REQUEST(error.message));
     }
-
 });
 
 export default userRouter;

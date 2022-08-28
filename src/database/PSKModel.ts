@@ -10,7 +10,7 @@ const PSKSchema = new mongoose.Schema<IProtSymKey, PSKModel>(
             required: true,
             unique: true
         },
-        key: {
+        data: {
             type: String,
             required: true
         },

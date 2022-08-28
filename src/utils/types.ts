@@ -49,7 +49,9 @@ type SignupBody = {
     email: string,
     masterPwdHash: string,
     firstName: string,
-    lastName: string
+    lastName: string,
+    PSK: string,
+    IV: string
 }
 
 type UpdateProfileBody = {
@@ -62,8 +64,9 @@ type SendVerificationBody = {
 }
 
 type ProtSymKeyBody = {
-    key: string,
-    IV: string
+    IV: string,
+    data: string
+
 }
 
 export { LoginBody, SignupBody, UpdateProfileBody, SendVerificationBody, ProtSymKeyBody };
@@ -106,6 +109,19 @@ type UserModel = mongoose.Model<IUser, unknown, IUserMethods> & {
 
 export { IUser, IUserToJSON, UserModel };
 
+// Create Typescript interface that reflects the Mongoose schema
+type IUserVerification = SignupBody;
+
+// Create Mongoose model that knows the signature of
+// the new static methods added to the model and the document
+type UserVerificationModel = mongoose.Model<IUserVerification, unknown, unknown> & {
+    build(item: IUserVerification): mongoose.Document<IUserVerification> & IUserVerification & {
+        _id: mongoose.Types.ObjectId
+    }
+}
+
+export { IUserVerification, UserVerificationModel };
+
 // Create Typescript interface that reflects the Mongoose schema for verification token
 type IVerificationToken = {
     userId: mongoose.Types.ObjectId,
@@ -123,14 +139,14 @@ export { IVerificationToken, VerificationTokenModel };
 // Create Typescript interface that reflects the Mongoose schema for protected symmetric key
 type IProtSymKey = {
     userId: mongoose.Types.ObjectId,
-    key: string,
-    IV: string
+    IV: string,
+    data: string
 }
 
 type IPSKToJSON = {
     userId?: mongoose.Types.ObjectId,
-    key: string,
     IV: string,
+    data: string,
     _id?: string,
     createdAt?: Date,
     updatedAt?: Date
