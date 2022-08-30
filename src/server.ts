@@ -13,7 +13,6 @@ import vaultRouter from './routers/vaultRouter';
 import checkEnvironment from './utils/checkEnvironment';
 import { initLogger } from './utils/logger';
 
-
 /*
 TODO:
     - cors, CORS library (@types/cors)
@@ -41,7 +40,12 @@ if (process.env.SERVER_REVERSE_PROXY) {
     server.set('trust proxy', true);
 }
 
-const excludedRoutes = ['/api/user/login', '/api/user/signup', '/api/user/verify'];
+const excludedRoutes = [
+    '/api/user/login',
+    '/api/user/signup',
+    '/api/user/verify',
+    '/api/user/sendVerification',
+];
 if (process.env.NODE_ENV === 'development') {
     excludedRoutes.push('/api/echo', '/api/aesTools');
 }

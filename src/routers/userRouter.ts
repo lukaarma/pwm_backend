@@ -156,7 +156,7 @@ userRouter.put('/profile', async (req, res) => {
 
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
-userRouter.post('/verify/sendVerification', async (req, res) => {
+userRouter.post('/sendVerification', async (req, res) => {
     const { error, value } = sendVerificationSchema.validate(req.body);
 
     if (!error && value) {

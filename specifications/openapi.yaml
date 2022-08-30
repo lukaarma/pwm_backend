@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
     title: PassWordManagerAPI
-    version: 1.2.1
+    version: 1.2.2
     description: >-
         PassWordManager API used to manage users, personal credential databases and
         the services offered to the user
@@ -154,7 +154,7 @@ paths:
                         schema:
                             type: object
                             properties:
-                                mail:
+                                email:
                                     type: string
                                     format: email
                             required:
