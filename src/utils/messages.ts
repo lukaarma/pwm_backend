@@ -8,7 +8,7 @@ export const LOG_ERRORS = {
     MISSING_MAILGUN_DOMAIN: 'Missing Mailgun domain!\nPlease use the MAILGUN_DOMAIN environment variable to specify the Mailgun domain!',
     MISSING_MAILGUN_USERNAME: 'Missing Mailgun username!\nPlease use the MAILGUN_USERNAME environment variable to specify the Mailgun username!',
     MISSING_MAILGUN_PASSWORD: 'Missing Mailgun password!\nPlease use the MAILGUN_PASSWORD environment variable to specify the Mailgun password!',
-    MAILGUN_EU: 'Missing Mailgun EU!\nPlease use the MAILGUN_EU enviroment variable to specify the Mailgun EU!',
+    MAILGUN_EU: 'Missing Mailgun EU!\nPlease use the MAILGUN_EU environment variable to specify the Mailgun EU!',
     SERVER_PORT_ISNAN: 'Server port parsing error!\nPlease use the SERVER_PORT environment variable to specify a valid server port!',
     SERVER_PORT_OUT_OF_RANGE: 'Server port out of range!\nThe server port must be a number between 1 and 65535. Please use the SERVER_PORT environment variable to specify a valid server port!'
 };
@@ -22,32 +22,69 @@ export const LOG_WARN = {
 };
 
 
+enum CODES {
+    PSK_SAVED_SUCCESS = 100,
+    VAULT_SAVED_SUCCESS,
+    VERIFICATION_TOKEN_SENT = 110,
+    PROFILE_VERIFIED = 120,
+    VAULT_UPDATED = 130,
+
+    LOGIN_FAILED = 300,
+    SIGNUP_ERROR = 310,
+    UNAUTHORIZED_ACCESS = 320,
+    INVALID_VERIFICATION_TOKEN = 330,
+    MISSING_PSK = 340,
+    MISSING_VAULT,
+    SAVE_PSK_ERROR = 350,
+    SAVE_VAULT_ERROR,
+    DUPLICATE_PSK = 360,
+    DUPLICATE_VAULT,
+    VAULT_LOWER_VERSION = 370,
+    VAULT_OLDER_DATE,
+
+    SYNTAX_BAD_REQUEST = 600,
+    LOGIN_BAD_REQUEST,
+    SIGNUP_BAD_REQUEST,
+    UPDATE_PROFILE_BAD_REQUEST,
+    SEND_VERIFICATION_BAD_REQUEST,
+    VERIFY_TOKEN_BAD_REQUEST,
+    PSK_BAD_REQUEST,
+    VAULT_BAD_REQUEST
+}
+
+
 export const WEB_ERRORS = {
-    LOGIN_FAILED: make(300, 'Wrong username or password'),
-    SIGNUP_ERROR: make(310, 'Error creating new profile, please try again later'),
-    UNAUTHORIZED_ACCESS: make(320, 'Unauthorized access'),
-    INVALID_VERIFICATION_TOKEN: make(330, 'Invalid, expired or already verified token submitted'),
-    MISSING_PSK: make(340, 'Cannot find Protected Symmetric KeyInvalid associated with the user'),
-    SAVE_PSK_ERROR: make(350, 'Error saving new Protected Symmetric Key, please try again later'),
-    DUPLICATE_PSK: make(360, 'A Protected Symmetric Key already exists for this user'),
-    SYNTAX_BAD_REQUEST: (message: string): JSONResponse => make(600, message),
-    LOGIN_BAD_REQUEST: (message: string): JSONResponse => make(601, message),
-    SIGNUP_BAD_REQUEST: (message: string): JSONResponse => make(602, message),
-    UPDATE_PROFILE_BAD_REQUEST: (message: string): JSONResponse => make(603, message),
-    SEND_VERIFICATION_BAD_REQUEST: (message: string): JSONResponse => make(604, message),
-    VERIFY_TOKEN_BAD_REQUEST: (message: string): JSONResponse => make(605, message),
-    EVERYTHING_IS_ON_FIRE: {
-        code: 999,
-        message: 'This is fine. Request in auth route with valid JWT and invalid user id'
-    },
+    LOGIN_FAILED: make(CODES.LOGIN_FAILED, 'Wrong username or password'),
+    SIGNUP_ERROR: make(CODES.SIGNUP_ERROR, 'Error creating new profile, please try again later'),
+    UNAUTHORIZED_ACCESS: make(CODES.UNAUTHORIZED_ACCESS, 'Unauthorized access'),
+    INVALID_VERIFICATION_TOKEN: make(CODES.INVALID_VERIFICATION_TOKEN, 'Invalid, expired or already verified token submitted'),
+    MISSING_PSK: make(CODES.MISSING_PSK, 'Cannot find Protected Symmetric Key associated with the user'),
+    MISSING_VAULT: make(CODES.MISSING_VAULT, 'Cannot find Vault associated with the user'),
+    SAVE_PSK_ERROR: make(CODES.SAVE_PSK_ERROR, 'Error saving new Protected Symmetric Key, please try again later'),
+    SAVE_VAULT_ERROR: make(CODES.SAVE_VAULT_ERROR, 'Error saving new Vault, please try again later'),
+    DUPLICATE_PSK: make(CODES.DUPLICATE_PSK, 'A Protected Symmetric Key already exists for this user'),
+    DUPLICATE_VAULT: make(CODES.DUPLICATE_VAULT, 'A Vault already exists for this user, please use put method to update vault'),
+    VAULT_LOWER_VERSION: make(CODES.VAULT_LOWER_VERSION, 'Ignoring Vault update because of lower version number than existing vault'),
+    VAULT_OLDER_DATE: make(CODES.VAULT_OLDER_DATE, 'Ignoring Vault update because of older last modified date than existing vault'),
+    SYNTAX_BAD_REQUEST: (message: string): JSONResponse => make(CODES.SYNTAX_BAD_REQUEST, message),
+    LOGIN_BAD_REQUEST: (message: string): JSONResponse => make(CODES.LOGIN_BAD_REQUEST, message),
+    SIGNUP_BAD_REQUEST: (message: string): JSONResponse => make(CODES.SIGNUP_BAD_REQUEST, message),
+    UPDATE_PROFILE_BAD_REQUEST: (message: string): JSONResponse => make(CODES.UPDATE_PROFILE_BAD_REQUEST, message),
+    SEND_VERIFICATION_BAD_REQUEST: (message: string): JSONResponse => make(CODES.SEND_VERIFICATION_BAD_REQUEST, message),
+    VERIFY_TOKEN_BAD_REQUEST: (message: string): JSONResponse => make(CODES.VERIFY_TOKEN_BAD_REQUEST, message),
+    PSK_BAD_REQUEST: (message: string): JSONResponse => make(CODES.PSK_BAD_REQUEST, message),
+    VAULT_BAD_REQUEST: (message: string): JSONResponse => make(CODES.VAULT_BAD_REQUEST, message),
+    EVERYTHING_IS_ON_FIRE: make(999, 'This is fine. Request in auth route with valid JWT and invalid user id')
 };
 
 
 export const WEB_MESSAGES = {
-    PSK_SAVED_SUCCESS: make(100, 'Protected Symmetric Key saved successfully'),
+    PSK_SAVED_SUCCESS: make(CODES.PSK_SAVED_SUCCESS, 'Protected Symmetric Key saved successfully'),
+    VAULT_SAVED_SUCCESS: make(CODES.VAULT_SAVED_SUCCESS, 'Vault saved successfully'),
     VERIFICATION_TOKEN_SENT: (email: string): JSONResponse =>
-        make(101, `A confirmation email was sent to '${email}'. Please check your inbox.`),
-    PROFILE_VERIFIED: make(102, 'Profile verified successfully')
+        make(CODES.VERIFICATION_TOKEN_SENT, `A confirmation email was sent to '${email}'.\nPlease check your inbox.`),
+    PROFILE_VERIFIED: make(CODES.PROFILE_VERIFIED, 'Profile verified successfully'),
+    VAULT_UPDATED: make(CODES.VAULT_UPDATED, 'Vault updated successfully')
 };
 
 

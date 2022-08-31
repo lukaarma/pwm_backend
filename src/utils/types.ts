@@ -63,13 +63,19 @@ type SendVerificationBody = {
     email: string
 }
 
-type ProtSymKeyBody = {
+type PSKBody = {
     IV: string,
-    data: string
-
+    PSK: string
 }
 
-export { LoginBody, SignupBody, UpdateProfileBody, SendVerificationBody, ProtSymKeyBody };
+type VaultBody = {
+    version: number,
+    lastModified: Date,
+    IV: string,
+    data: string
+}
+
+export { LoginBody, SignupBody, UpdateProfileBody, SendVerificationBody, PSKBody, VaultBody };
 
 
 /* ===== Mongoose ===== */
@@ -137,14 +143,41 @@ type VerificationTokenModel = mongoose.Model<IVerificationToken, unknown, unknow
 export { IVerificationToken, VerificationTokenModel };
 
 // Create Typescript interface that reflects the Mongoose schema for protected symmetric key
-type IProtSymKey = {
+type IPSK = {
     userId: mongoose.Types.ObjectId,
     IV: string,
-    data: string
+    PSK: string
 }
 
 type IPSKToJSON = {
     userId?: mongoose.Types.ObjectId,
+    IV: string,
+    PSK: string,
+    _id?: string,
+    createdAt?: Date,
+    updatedAt?: Date
+}
+
+type PSKModel = mongoose.Model<IPSK, unknown, unknown> & {
+    build(item: IPSK): mongoose.Document<IPSK> & IPSK & {
+        _id: mongoose.Types.ObjectId
+    }
+}
+
+export { IPSK, IPSKToJSON, PSKModel };
+
+type IVault = {
+    userId: mongoose.Types.ObjectId,
+    version: number,
+    lastModified: Date,
+    IV: string,
+    data: string
+}
+
+type IVaultToJSON = {
+    userId?: mongoose.Types.ObjectId,
+    version: number,
+    lastModified: Date,
     IV: string,
     data: string,
     _id?: string,
@@ -152,10 +185,10 @@ type IPSKToJSON = {
     updatedAt?: Date
 }
 
-type PSKModel = mongoose.Model<IProtSymKey, unknown, unknown> & {
-    build(item: IProtSymKey): mongoose.Document<IProtSymKey> & IProtSymKey & {
+type VaultModel = mongoose.Model<IVault, unknown, unknown> & {
+    build(item: IVault): mongoose.Document<IVault> & IVault & {
         _id: mongoose.Types.ObjectId
     }
 }
 
-export { IProtSymKey, IPSKToJSON, PSKModel };
+export { IVault, IVaultToJSON, VaultModel };

@@ -1,16 +1,16 @@
 import mongoose from 'mongoose';
 
-import { IProtSymKey, IPSKToJSON, PSKModel } from '../utils/types';
+import { IPSK, IPSKToJSON, PSKModel } from '../utils/types';
 
 // create the schema for the database using the interface and the model
-const PSKSchema = new mongoose.Schema<IProtSymKey, PSKModel>(
+const PSKSchema = new mongoose.Schema<IPSK, PSKModel>(
     {
         userId: {
             type: mongoose.Schema.Types.ObjectId,
             required: true,
             unique: true
         },
-        data: {
+        PSK: {
             type: String,
             required: true
         },
@@ -36,8 +36,7 @@ PSKSchema.set('toJSON', {
 });
 
 // add static build method used to create new users and typechecks them with Typescript
-PSKSchema.static('build', (item) => new ProtSymKey(item));
-const ProtSymKey = mongoose.model<IProtSymKey, PSKModel>(
-    'ProtectedSymmetricKey', PSKSchema, 'ProtectedSymmetricKeys');
+PSKSchema.static('build', (item) => new PSK(item));
+const PSK = mongoose.model<IPSK, PSKModel>('ProtectedSymmetricKey', PSKSchema, 'ProtectedSymmetricKeys');
 
-export default ProtSymKey;
+export default PSK;
