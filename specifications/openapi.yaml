@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
     title: PassWordManagerAPI
-    version: 1.2.2
+    version: 1.3.0
     description: >-
         PassWordManager API used to manage users, personal credential databases and
         the services offered to the user
@@ -189,6 +189,54 @@ paths:
                 "500":
                     $ref: "#/components/responses/500"
 
+    /vault:
+        get:
+            summary: Download the Encrypted Vault from the database
+
+            responses:
+                "200":
+                    $ref: "#/components/responses/VaultResponse"
+                "400":
+                    $ref: "#/components/responses/400"
+                "500":
+                    $ref: "#/components/responses/500"
+
+        post:
+            summary: Create the new Encrypted Vault associated with the user, fail if Vault already exists
+
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Vault"
+
+            responses:
+                "200":
+                    $ref: "#/components/responses/200"
+                "400":
+                    $ref: "#/components/responses/400"
+                "500":
+                    $ref: "#/components/responses/500"
+
+        put:
+            summary: Update the Encrypted Vault associated with the user, fail if key doesn't exists
+
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/Vault"
+
+            responses:
+                "200":
+                    $ref: "#/components/responses/200"
+                "400":
+                    $ref: "#/components/responses/400"
+                "500":
+                    $ref: "#/components/responses/500"
+
     /vault/key:
         get:
             summary: Download the Protected Symmetric Key from the database
@@ -204,6 +252,13 @@ paths:
         post:
             summary: Create the Protected Symmetric Key associated with the user, fail if key already exists
 
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/PSK"
+
             responses:
                 "200":
                     $ref: "#/components/responses/200"
@@ -214,6 +269,13 @@ paths:
 
         put:
             summary: Update the Protected Symmetric Key associated with the user, fail if key doesn't exists
+
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: "#/components/schemas/PSK"
 
             responses:
                 "200":
@@ -275,7 +337,7 @@ components:
                 - lastName
 
         PSK:
-            summary: Protected Symmetric Key as base64 strings
+            summary: Protected Symmetric Key as hex encoded string
             type: object
             properties:
                 key:
@@ -287,6 +349,27 @@ components:
             required:
                 - key
                 - IV
+
+        Vault:
+            summary: Encrypted Vault as base64 encoded string
+            type: object
+            properties:
+                version:
+                    type: number
+                    min: 1
+                lastModified:
+                    type: Date
+                IV:
+                    type: string
+                    format: hex
+                data:
+                    type: string
+                    format: base64
+            required:
+                - version
+                - lastModified
+                - IV
+                - data
 
     responses:
         UserInfoResponse:
@@ -301,7 +384,14 @@ components:
             content:
                 application/json:
                     schema:
-                        $ref: "#/components/schemas/UserInfo"
+                        $ref: "#/components/schemas/PSK"
+
+        VaultResponse:
+            description: Vault info, decrypted on client to access credentials
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Vault"
 
         "200":
             description: Request successful
