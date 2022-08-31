@@ -1,7 +1,7 @@
 {
     "name": "pwm_backend",
     "version": "1.0.0",
-    "description": "PWM is a simple passwor manager website that encrypts locally yours credentials and syncs them accros all your devices.",
+    "description": "PWM is a simple password manager website that encrypts locally yours credentials and syncs them across all your devices.",
     "type": "module",
     "exports": "./build/server.js",
     "scripts": {

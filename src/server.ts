@@ -50,7 +50,7 @@ if (process.env.NODE_ENV === 'development') {
     excludedRoutes.push('/api/echo', '/api/aesTools');
 }
 
-logger.info('Installing middlewares ...');
+logger.info('Installing middleware ...');
 // middleware stack.
 server.use(morgan('dev'));
 server.use(express.json());

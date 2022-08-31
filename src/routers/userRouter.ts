@@ -25,16 +25,16 @@ const userRouter = express.Router();
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 userRouter.post('/login', async (req, res) => {
-    const { error, value } = loginSchema.validate(req.body, { stripUnknown: true });
+    const { error, value : userInfo } = loginSchema.validate(req.body, { stripUnknown: true });
 
-    if (!error && value) {
-        logger.verbose(`[LOGIN] New login request from ${value.email}`);
+    if (!error && userInfo) {
+        logger.verbose(`[LOGIN] New login request from ${userInfo.email}`);
 
-        const user = await User.findOne({ email: value.email });
+        const user = await User.findOne({ email: userInfo.email });
 
-        if (user && (await user.validateMPH(value.masterPwdHash))) {
+        if (user && (await user.validateMPH(userInfo.masterPwdHash))) {
             const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-            logger.debug(`[LOGIN] bearer token created for ${value.email}`);
+            logger.debug(`[LOGIN] bearer token created for ${userInfo.email}`);
 
             const PSK = await ProtSymKey.findOne({ userId: user._id });
 
@@ -43,17 +43,17 @@ userRouter.post('/login', async (req, res) => {
 
                 res.status(200).json({
                     firstName: user.firstName,
-                    PSK: PSK.data,
+                    PSK: PSK.PSK,
                     IV: PSK.IV
                 });
             }
             else {
-                logger.warn(`[LOGIN] login failed for ${value.email}: missing PSK`);
+                logger.warn(`[LOGIN] login failed for ${userInfo.email}: missing PSK`);
                 res.status(401).json(WEB_ERRORS.MISSING_PSK);
             }
         }
         else {
-            logger.debug(`[LOGIN] login failed for ${value.email}: ${user ? 'Wrong password' : 'Wrong email'}`);
+            logger.debug(`[LOGIN] login failed for ${userInfo.email}: ${user ? 'Wrong password' : 'Wrong email'}`);
 
             res.status(401).json(WEB_ERRORS.LOGIN_FAILED);
         }
@@ -68,34 +68,34 @@ userRouter.post('/login', async (req, res) => {
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 userRouter.post('/signup', async (req, res) => {
-    const { error, value } = signupSchema.validate(req.body, { stripUnknown: true });
+    const { error, value: userInfo } = signupSchema.validate(req.body, { stripUnknown: true });
 
-    if (!error && value) {
-        logger.verbose(`[SIGNUP] New signup request: '${value.email}' (${value.lastName} ${value.firstName})`);
+    if (!error && userInfo) {
+        logger.verbose(`[SIGNUP] New signup request: '${userInfo.email}' (${userInfo.lastName} ${userInfo.firstName})`);
 
-        if (!await User.exists({ email: value.email })) {
+        if (!await User.exists({ email: userInfo.email })) {
             // with 'upsert: true' if no document is found it will insert a new one
             await UserVerification.findOneAndUpdate(
-                { email: value.email },
-                value,
+                { email: userInfo.email },
+                userInfo,
                 { runValidators: true, new: true, upsert: true }
             ).then(async (newUser) => {
-                logger.debug(`[SIGNUP] New user signup '${value.email}'`);
+                logger.debug(`[SIGNUP] New user signup '${userInfo.email}'`);
 
-                res.status(200).json(WEB_MESSAGES.VERIFICATION_TOKEN_SENT(value.email));
+                res.status(200).json(WEB_MESSAGES.VERIFICATION_TOKEN_SENT(userInfo.email));
 
-                await createVerificationToken(newUser._id, value.email);
+                await createVerificationToken(newUser._id, userInfo.email);
             }).catch((err: Error) => {
                 logger.error({ message: err });
-                logger.debug(`[SIGNUP] Failed new user signup, db error '${value.email}'`);
+                logger.debug(`[SIGNUP] Failed new user signup, db error '${userInfo.email}'`);
 
                 return res.status(500).json(WEB_ERRORS.SIGNUP_ERROR);
             });
         }
         else {
-            logger.warn(`[SIGNUP] Failed new user signup, already exists '${value.email}'`);
+            logger.warn(`[SIGNUP] Failed new user signup, already exists '${userInfo.email}'`);
 
-            res.status(200).json(WEB_MESSAGES.VERIFICATION_TOKEN_SENT(value.email));
+            res.status(200).json(WEB_MESSAGES.VERIFICATION_TOKEN_SENT(userInfo.email));
         }
     }
     else {
@@ -125,14 +125,14 @@ userRouter.get('/profile', async (req, res) => {
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 userRouter.put('/profile', async (req, res) => {
-    const { error, value } = updateProfileSchema.validate(req.body);
+    const { error, value: userUpdate } = updateProfileSchema.validate(req.body);
 
-    if (!error && value) {
+    if (!error && userUpdate) {
         logger.verbose(`[PROFILE] Updated profile with id '${req.jwtInfo.id}'`);
 
         const user = await User.findOneAndUpdate(
             { _id: req.jwtInfo.id },
-            { firstName: value.firstName, lastName: value.lastName },
+            { firstName: userUpdate.firstName, lastName: userUpdate.lastName },
             { new: true }
         );
 
@@ -205,7 +205,7 @@ userRouter.get('/verify/:token', async (req, res) => {
                 const PSK = ProtSymKey.build({
                     userId: user._id,
                     IV: userVerification.IV,
-                    data: userVerification.PSK
+                    PSK: userVerification.PSK
                 });
 
                 await Promise.all([
@@ -241,7 +241,6 @@ export default userRouter;
 
 
 async function createVerificationToken(userId: mongoose.Types.ObjectId, email: string): Promise<void> {
-
     const token = VerificationToken.build({
         token: UUIDv4(),
         userId

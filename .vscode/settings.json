@@ -7,8 +7,11 @@
         "IPSK",
         "ISNAN",
         "Logform",
+        "lukaarma",
         "Mailgun",
+        "openapi",
         "PKCS",
+        "Romio",
         "uuidv"
     ]
 }
