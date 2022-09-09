@@ -22,15 +22,15 @@ const loginSchema = Joi.object<LoginBody>({
 const signupSchema = Joi.object<SignupBody>({
     email: Joi.string().trim().email().required(),
     masterPwdHash: Joi.string().trim().hex().length(MPHLength).required(),
-    firstName: Joi.string().pattern(nameRegex).required(),
-    lastName: Joi.string().pattern(nameRegex).required(),
+    firstName: Joi.string().trim().pattern(nameRegex).required(),
+    lastName: Joi.string().trim().pattern(nameRegex).required(),
     IV: Joi.string().trim().hex().length(IVLength).required(),
     PSK: Joi.string().trim().hex().length(PSKLength).required()
 }).preferences({ abortEarly: false, stripUnknown: true });
 
 const updateProfileSchema = Joi.object<UpdateProfileBody>({
-    firstName: Joi.string().pattern(nameRegex),
-    lastName: Joi.string().pattern(nameRegex)
+    firstName: Joi.string().trim().pattern(nameRegex),
+    lastName: Joi.string().trim().pattern(nameRegex)
 });
 
 const sendVerificationSchema = Joi.object<SendVerificationBody>({
