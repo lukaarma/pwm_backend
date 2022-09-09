@@ -5,11 +5,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable no-undef */
+import base64 from './base64.js';
 import config from './config.js';
 import cryptoUtils from './cryptoUtils.js';
 import login from './login.js';
 import signup from './signup.js';
-
 
 async function decryptVault() {
     await cryptoUtils.decryptVault(
@@ -18,10 +18,10 @@ async function decryptVault() {
             'raw',
             cryptoUtils.fromHex(symmetricKeyEl.value),
             'AES-CBC',
-            false,
+            true,
             ['decrypt']
         ),
-        cryptoUtils.fromHex(encryptedVaultEl.value)
+        base64.toByteArray(encryptedVaultEl.value)
     ).then((vault) => {
         const decoder = new TextDecoder();
 
@@ -36,12 +36,12 @@ async function encryptVault() {
             'raw',
             cryptoUtils.fromHex(symmetricKeyEl.value),
             'AES-CBC',
-            false,
+            true,
             ['encrypt']
         ),
         vaultEl.value
     ).then((encryptedVault) => {
-        encryptedVaultEl.value = cryptoUtils.toHex(encryptedVault);
+        encryptedVaultEl.value = base64.fromByteArray(new Uint8Array(encryptedVault));
     }).catch(err => console.dir(err));
 }
 
@@ -85,9 +85,20 @@ if (typeof config.vaultIV === 'string' && config.vaultIV) {
 if (typeof config.encryptedVault === 'string' && config.encryptedVault) {
     encryptedVaultEl.value = config.encryptedVault;
 }
+if (config.vault) {
+    vaultEl.value = JSON.stringify(config.vault);
+}
 
 
 masterKeyEl.value = '';
 MPHEl.value = '';
 symmetricKeyEl.value = '';
-vaultEl.value = '';
+encryptedVaultEl.value = '';
+
+// const test = crypto.getRandomValues(new Uint8Array(16));
+// const b64 = cryptoUtils.toB64(test);
+// const decoded = cryptoUtils.fromB64(b64);
+
+// console.log(test);
+// console.log(b64);
+// console.log(decoded);
