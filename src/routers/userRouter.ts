@@ -43,6 +43,8 @@ userRouter.post('/login', async (req, res) => {
 
                 res.status(200).json({
                     firstName: user.firstName,
+                    lastName: user.lastName,
+                    email: user.email,
                     PSK: PSK.PSK,
                     IV: PSK.IV
                 });
