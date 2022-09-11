@@ -1,3 +1,4 @@
+import historyApiFallback from 'connect-history-api-fallback';
 import cors from 'cors';
 import 'dotenv/config';
 import express from 'express';
@@ -15,12 +16,11 @@ import vaultRouter from './routers/vaultRouter';
 import checkEnvironment from './utils/checkEnvironment';
 import { initLogger } from './utils/logger';
 
+
 /*
 TODO:
     - helmet, customize CSP with nonces
     - express-mongo-sanitize, sanitize mongodb input to prevent query injection
-    - user input XSS sanitization
-    - fronted router
     - check all HTTP codes
 */
 
@@ -42,6 +42,14 @@ if (process.env.SERVER_REVERSE_PROXY) {
 }
 
 const excludedRoutes = [
+    // webApp
+    '/home',
+    '/login',
+    '/signup',
+    '/assets',
+    '/sendVerification',
+    '/favicon.ico',
+    // API
     '/api/user/login',
     '/api/user/signup',
     '/api/user/verify',
@@ -89,6 +97,19 @@ if (process.env.NODE_ENV === 'development') {
             path.dirname(fileURLToPath(import.meta.url)),
             '../public'
         )
+    ));
+}
+
+// FIXME: hardcoded folders
+if (process.env.NODE_ENV === 'production') {
+    server.use(historyApiFallback());
+
+    server.use('/', express.static(
+        path.join(
+            path.dirname(fileURLToPath(import.meta.url)),
+            '../../pwm_frontend/dist'
+        ),
+        { index: ['index.html'] }
     ));
 }
 

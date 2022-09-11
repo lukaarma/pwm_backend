@@ -5,10 +5,9 @@ import logger from 'winston';
 import { JwtInfo } from '../utils/types';
 import { WEB_ERRORS } from '../utils/messages';
 
-/* TODO:
-    - move response messages in utils/message.ts
-    - add redirect to login for frontend
-*/
+
+// TODO: better route exclusion
+
 export default function (excludedPaths?: Array<string>):
     ((req: express.Request, res: express.Response, next: express.NextFunction) => void) {
 
@@ -16,7 +15,9 @@ export default function (excludedPaths?: Array<string>):
 
     return (req, res, next): void => {
         if (excludedPaths?.some((path) => req.path.startsWith(path))) {
-            logger.debug(`[JWTAuth] excluded path used '${req.path}'`);
+            if (!req.path.startsWith('/assets')) {
+                logger.debug(`[JWTAuth] excluded path used '${req.path}'`);
+            }
 
             return next();
         }
@@ -35,6 +36,11 @@ export default function (excludedPaths?: Array<string>):
             logger.debug(`[JWTAuth] missing JWT token on path '${req.path}'`);
         }
 
-        res.status(401).json(WEB_ERRORS.UNAUTHORIZED_ACCESS);
+        if (req.path.startsWith('/api/')) {
+            res.status(401).json(WEB_ERRORS.UNAUTHORIZED_ACCESS);
+        }
+        else {
+            res.redirect(301, '/login');
+        }
     };
 }
