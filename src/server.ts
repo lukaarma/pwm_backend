@@ -1,3 +1,4 @@
+import cors from 'cors';
 import 'dotenv/config';
 import express from 'express';
 import morgan from 'morgan';
@@ -15,10 +16,8 @@ import { initLogger } from './utils/logger';
 
 /*
 TODO:
-    - cors, CORS library (@types/cors)
     - helmet, collection of headers to enhance security
     - express-mongo-sanitize, sanitize mongodb input to prevent query injection
-    - JWT authorization logic!
     - user input XSS sanitization
     - fronted router
     - check all HTTP codes
@@ -54,6 +53,7 @@ if (process.env.NODE_ENV === 'development') {
 logger.info('Installing middleware ...');
 // middleware stack.
 server.use(morgan('dev'));
+server.use(cors({ origin: process.env.SERVER_HOSTNAME }));
 server.use(express.json());
 server.use(JWTAuth(excludedRoutes));
 server.use(expressJSONHandler);
