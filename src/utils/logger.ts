@@ -19,9 +19,7 @@ export function initLogger(): void {
         format: winston.format.combine(
             winston.format.errors({ stack: true }),
             winston.format.timestamp({ format: 'YYYY-MM-DD hh:mm:ss' }),
-            winston.format.printf(
-                (item: winston.Logform.TransformableInfo) => customLogPrint(item)
-            )
+            winston.format.printf((item) => customLogPrint(item))
         )
     }));
 
@@ -32,14 +30,22 @@ export function initLogger(): void {
         winston.add(new winston.transports.File({
             filename: 'logs/error.log',
             level: 'error',
-            format: winston.format.json()
+            format: winston.format.combine(
+                winston.format.errors({ stack: true }),
+                winston.format.timestamp({ format: 'YYYY-MM-DD hh:mm:ss' }),
+                winston.format.printf((item) => customFileFormat(item))
+            ),
         }));
     }
     else {
         winston.add(new winston.transports.File({
             filename: 'logs/debug.log',
             level: 'debug',
-            format: winston.format.json(),
+            format: winston.format.combine(
+                winston.format.errors({ stack: true }),
+                winston.format.timestamp({ format: 'YYYY-MM-DD hh:mm:ss' }),
+                winston.format.printf((item) => customFileFormat(item))
+            ),
             options: {
                 flags: 'w'
             }
@@ -49,28 +55,49 @@ export function initLogger(): void {
 
 
 function customLogPrint(info: winston.Logform.TransformableInfo): string {
+    let message = '';
+    if (info.timestamp && typeof info.timestamp === 'string') {
+        message += info.timestamp + ' ';
+    }
+
     switch (info.level) {
         case 'error': {
             if (info.fatal) {
-                return `${chalk.red('\n[FATAL ERROR]')} ${info.stack ?? info.message ?? 'NO ERROR INFO'}`;
+                return message + `${chalk.red('\n[FATAL ERROR]')} ${info.stack ?? info.message ?? 'NO ERROR INFO'}`;
             }
 
-            return `${chalk.red('\n[ERROR]')} ${info.stack ?? info.message ?? 'NO ERROR INFO'}`;
+            return message + `${chalk.red('\n[ERROR]'.padEnd(9))} ${info.stack ?? info.message ?? 'NO ERROR INFO'}`;
         }
         case 'warn': {
-            return `${chalk.yellow('[WARNING]')} ${info.stack ?? info.message ?? 'NO WARNING INFO'}`;
+            return message + `${chalk.yellow('[WARNING]'.padEnd(9))} ${info.stack ?? info.message ?? 'NO WARNING INFO'}`;
         }
         case 'info': {
-            return `${chalk.green('[INFO]')} ${info.message}`;
+            return message + `${chalk.green('[INFO]'.padEnd(9))} ${info.message}`;
         }
         case 'verbose': {
-            return `${chalk.cyan('[VERBOSE]')} ${info.message}`;
+            return message + `${chalk.cyan('[VERBOSE]'.padEnd(9))} ${info.message}`;
         }
         case 'debug': {
-            return `${chalk.magenta('[DEBUG]')} ${info.message}`;
+            return message + `${chalk.magenta('[DEBUG]'.padEnd(9))} ${info.message}`;
         }
         default: {
             return chalk.red('\n[ERROR] Invalid log level!\n');
         }
     }
+}
+
+
+function customFileFormat(info: winston.Logform.TransformableInfo): string {
+    let message = '';
+
+    if (info.timestamp && typeof info.timestamp === 'string') {
+        message += info.timestamp + ' ';
+    }
+
+    // longest label, excluded FATAL, is 9
+    message += `[${info.level.toUpperCase()}]`.padEnd(9) + ' ';
+
+    message += info.stack ?? info.message;
+
+    return message;
 }

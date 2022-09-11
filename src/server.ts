@@ -21,6 +21,7 @@ TODO:
     - JWT authorization logic!
     - user input XSS sanitization
     - fronted router
+    - check all HTTP codes
 */
 
 // first of all init logger to create transports
@@ -47,7 +48,7 @@ const excludedRoutes = [
     '/api/user/sendVerification',
 ];
 if (process.env.NODE_ENV === 'development') {
-    excludedRoutes.push('/api/echo', '/api/aesTools');
+    excludedRoutes.push('/api/echo', '/api/aesTools', '/api/log');
 }
 
 logger.info('Installing middleware ...');
@@ -70,6 +71,15 @@ if (process.env.NODE_ENV === 'development') {
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         res.status(200).json({ headers: req.headers, body: req.body });
+    });
+
+    server.use('/api/log', (_, res: express.Response): void => {
+        logger.debug('Sending debug log to client');
+
+        res.sendFile(path.join(
+            path.dirname(fileURLToPath(import.meta.url)),
+            '../logs/debug.log')
+        );
     });
 
     server.use('/api/aesTools', express.static(
