@@ -1,6 +1,7 @@
 import cors from 'cors';
 import 'dotenv/config';
 import express from 'express';
+import helmet from 'helmet';
 import morgan from 'morgan';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -16,7 +17,7 @@ import { initLogger } from './utils/logger';
 
 /*
 TODO:
-    - helmet, collection of headers to enhance security
+    - helmet, customize CSP with nonces
     - express-mongo-sanitize, sanitize mongodb input to prevent query injection
     - user input XSS sanitization
     - fronted router
@@ -54,6 +55,7 @@ logger.info('Installing middleware ...');
 // middleware stack.
 server.use(morgan('dev'));
 server.use(cors({ origin: process.env.SERVER_HOSTNAME }));
+server.use(helmet());
 server.use(express.json());
 server.use(JWTAuth(excludedRoutes));
 server.use(expressJSONHandler);
