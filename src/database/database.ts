@@ -6,9 +6,8 @@ import { LOG_ERRORS } from '../utils/messages';
 
 
 export async function initDatabase(): Promise<void> {
-    let mongooseOptions: mongoose.ConnectOptions = {
-        dbName: process.env.MONGODB_NAME
-    };
+    let mongooseOptions: mongoose.ConnectOptions;
+
     // Construct the connection authentication options based on env
     if (process.env.MONGODB_X509) {
         if (!fs.existsSync(process.env.MONGODB_X509)) {

@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 import logger from 'winston';
 
 import { initDatabase } from './database/database';
-import { expressJSONHandler } from './middleware/errorHandlers';
+import { expressJSONErrorHandler } from './middleware/errorHandlers';
 import JWTAuth from './middleware/JWTAuth';
 import userRouter from './routers/userRouter';
 import vaultRouter from './routers/vaultRouter';
@@ -17,12 +17,8 @@ import checkEnvironment from './utils/checkEnvironment';
 import { initLogger } from './utils/logger';
 
 
-/*
-TODO:
-    - helmet, customize CSP with nonces
-    - express-mongo-sanitize, sanitize mongodb input to prevent query injection
-    - check all HTTP codes
-*/
+// TODO: customize helmet CSP with nonces
+// TODO: check all HTTP codes
 
 // first of all init logger to create transports
 initLogger();
@@ -65,8 +61,8 @@ server.use(morgan('dev'));
 server.use(cors({ origin: process.env.SERVER_HOSTNAME }));
 server.use(helmet());
 server.use(express.json());
+server.use(expressJSONErrorHandler());
 server.use(JWTAuth(excludedRoutes));
-server.use(expressJSONHandler);
 
 logger.info('Installing routers...');
 // echo development endpoint
@@ -122,12 +118,9 @@ server.listen(
     process.env.SERVER_PORT,
     () => {
         if (process.env.SERVER_REVERSE_PROXY) {
-            // NOTE: false positive, already checked existence
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             logger.info(`Listening on 'https://${process.env.SERVER_HOSTNAME}'\n`);
         }
         else {
-            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
             logger.info(`Listening on 'http://${process.env.SERVER_HOSTNAME}:${process.env.SERVER_PORT}'\n`);
         }
     }
