@@ -13,19 +13,16 @@ import { loginSchema, sendVerificationSchema, signupSchema, updateProfileSchema,
 import sendVerificationEmail from '../utils/verificationEmail';
 
 
-/* TODO:
-    - better error handling!
-    - email revalidation if token timeout
-    - password update
-    - return PSK, IV, Vault and Vault IV after login
-*/
+// TODO: better error handling!
+// TODO: email revalidation if token timeout
+// TODO: password update
 
 const userRouter = express.Router();
 
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 userRouter.post('/login', async (req, res) => {
-    const { error, value : userInfo } = loginSchema.validate(req.body, { stripUnknown: true });
+    const { error, value: userInfo } = loginSchema.validate(req.body, { stripUnknown: true });
 
     if (!error && userInfo) {
         logger.verbose(`[LOGIN] New login request from ${userInfo.email}`);

@@ -5,11 +5,7 @@ import logger from 'winston';
 import { IUser, IUserToJSON, UserModel } from '../utils/types';
 
 
-/*
-TODO:
-    - consider upping bcrypt round to 13
-    - consider merging userModel.ts and userVerificationModel.ts
-*/
+// TODO: consider upping bcrypt round to 13
 
 // create the schema for the database using the interface and the model
 const userSchema = new mongoose.Schema<IUser, UserModel>(
