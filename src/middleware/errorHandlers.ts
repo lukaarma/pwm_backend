@@ -15,3 +15,18 @@ export function expressJSONErrorHandler(): express.ErrorRequestHandler {
         next();
     };
 }
+
+export function genericErrorHandler(): express.ErrorRequestHandler {
+    return (err, _, res, next) => {
+        if (err instanceof Error) {
+            logger.error({ message: err });
+
+            res.status(500).send(WEB_ERRORS.UNCAUGHT_EXCEPTION);
+        }
+        else {
+            logger.error(err);
+        }
+
+        next();
+    };
+}

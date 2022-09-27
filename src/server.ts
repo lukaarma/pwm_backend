@@ -9,7 +9,7 @@ import { fileURLToPath } from 'url';
 import logger from 'winston';
 
 import { initDatabase } from './database/database';
-import { expressJSONErrorHandler } from './middleware/errorHandlers';
+import { expressJSONErrorHandler, genericErrorHandler } from './middleware/errorHandlers';
 import JWTAuth from './middleware/JWTAuth';
 import userRouter from './routers/userRouter';
 import vaultRouter from './routers/vaultRouter';
@@ -111,6 +111,8 @@ if (process.env.NODE_ENV === 'production') {
         { index: ['index.html'] }
     ));
 }
+
+server.use(genericErrorHandler());
 
 logger.info('Server initialization done!');
 

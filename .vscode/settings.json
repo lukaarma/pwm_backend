@@ -12,6 +12,7 @@
         "openapi",
         "PKCS",
         "Romio",
+        "signup",
         "uuidv"
     ]
 }
