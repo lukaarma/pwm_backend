@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
     title: PassWordManagerAPI
-    version: 1.3.1
+    version: 1.4.0
     description: >-
         PassWordManager API used to manage users, personal credential databases and
         the services offered to the user
@@ -39,7 +39,7 @@ paths:
                                     format: password
                             required:
                                 - email
-                                - password
+                                - masterPwdHash
 
             responses:
                 "200":
@@ -106,6 +106,31 @@ paths:
                                 - lastName
                                 - PSK
                                 - IV
+            responses:
+                "200":
+                    $ref: "#/components/responses/200"
+                "400":
+                    $ref: "#/components/responses/400"
+                "500":
+                    $ref: "#/components/responses/500"
+
+    /user/delete:
+        post:
+            summary: Delete the user's account. Cannot be undone!
+
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                masterPwdHash:
+                                    type: string
+                                    format: password
+                            required:
+                                - masterPwdHash
+
             responses:
                 "200":
                     $ref: "#/components/responses/200"
@@ -233,6 +258,31 @@ paths:
                     application/json:
                         schema:
                             $ref: "#/components/schemas/Vault"
+
+            responses:
+                "200":
+                    $ref: "#/components/responses/200"
+                "400":
+                    $ref: "#/components/responses/400"
+                "500":
+                    $ref: "#/components/responses/500"
+
+    /vault/delete:
+        post:
+            summary: Delete the user's vault. Cannot be undone!
+
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                masterPwdHash:
+                                    type: string
+                                    format: password
+                            required:
+                                - masterPwdHash
 
             responses:
                 "200":

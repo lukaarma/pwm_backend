@@ -28,6 +28,8 @@ enum CODES {
     VERIFICATION_TOKEN_SENT = 110,
     PROFILE_VERIFIED = 120,
     VAULT_UPDATED = 130,
+    VAULT_DELETED,
+    ACCOUNT_DELETED,
 
     LOGIN_FAILED = 300,
     SIGNUP_ERROR = 310,
@@ -42,6 +44,9 @@ enum CODES {
     VAULT_LOWER_VERSION = 370,
     VAULT_OLDER_DATE,
 
+    UNCAUGHT_EXCEPTION = 500,
+    VALID_JWT_INVALID_ID,
+
     SYNTAX_BAD_REQUEST = 600,
     LOGIN_BAD_REQUEST,
     SIGNUP_BAD_REQUEST,
@@ -49,7 +54,9 @@ enum CODES {
     SEND_VERIFICATION_BAD_REQUEST,
     VERIFY_TOKEN_BAD_REQUEST,
     PSK_BAD_REQUEST,
-    VAULT_BAD_REQUEST
+    VAULT_BAD_REQUEST,
+    WRONG_PASSWORD,
+    DELETE_BAD_REQUEST
 }
 
 
@@ -66,6 +73,10 @@ export const WEB_ERRORS = {
     DUPLICATE_VAULT: make(CODES.DUPLICATE_VAULT, 'A Vault already exists for this user, please use put method to update vault'),
     VAULT_LOWER_VERSION: make(CODES.VAULT_LOWER_VERSION, 'Ignoring Vault update because of lower version number than existing vault'),
     VAULT_OLDER_DATE: make(CODES.VAULT_OLDER_DATE, 'Ignoring Vault update because of older last modified date than existing vault'),
+
+    UNCAUGHT_EXCEPTION: make(CODES.UNCAUGHT_EXCEPTION, 'Unexpected server error, please try again later'),
+    VALID_JWT_INVALID_ID: make(CODES.VALID_JWT_INVALID_ID, 'Request has valid auth token but invalid UserID inside token'),
+
     SYNTAX_BAD_REQUEST: (message: string): JSONResponse => make(CODES.SYNTAX_BAD_REQUEST, message),
     LOGIN_BAD_REQUEST: (message: string): JSONResponse => make(CODES.LOGIN_BAD_REQUEST, message),
     SIGNUP_BAD_REQUEST: (message: string): JSONResponse => make(CODES.SIGNUP_BAD_REQUEST, message),
@@ -74,6 +85,9 @@ export const WEB_ERRORS = {
     VERIFY_TOKEN_BAD_REQUEST: (message: string): JSONResponse => make(CODES.VERIFY_TOKEN_BAD_REQUEST, message),
     PSK_BAD_REQUEST: (message: string): JSONResponse => make(CODES.PSK_BAD_REQUEST, message),
     VAULT_BAD_REQUEST: (message: string): JSONResponse => make(CODES.VAULT_BAD_REQUEST, message),
+    WRONG_PASSWORD: make(CODES.WRONG_PASSWORD, 'Wrong password!'),
+    DELETE_BAD_REQUEST: (message: string): JSONResponse => make(CODES.DELETE_BAD_REQUEST, message),
+
     EVERYTHING_IS_ON_FIRE: make(999, 'This is fine. Request in auth route with valid JWT and invalid user id')
 };
 
@@ -84,7 +98,9 @@ export const WEB_MESSAGES = {
     VERIFICATION_TOKEN_SENT: (email: string): JSONResponse =>
         make(CODES.VERIFICATION_TOKEN_SENT, `A confirmation email was sent to '${email}'.\nPlease check your inbox.`),
     PROFILE_VERIFIED: make(CODES.PROFILE_VERIFIED, 'Profile verified successfully'),
-    VAULT_UPDATED: make(CODES.VAULT_UPDATED, 'Vault updated successfully')
+    VAULT_UPDATED: make(CODES.VAULT_UPDATED, 'Vault updated successfully'),
+    VAULT_DELETED: make(CODES.VAULT_DELETED, 'Vault deleted successfully'),
+    ACCOUNT_DELETED: make(CODES.ACCOUNT_DELETED, 'Account deleted successfully')
 };
 
 

@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { LoginBody, SignupBody, UpdateProfileBody, SendVerificationBody, PSKBody, VaultBody } from './types';
+import { LoginBody, SignupBody, UpdateProfileBody, SendVerificationBody, PSKBody, VaultBody, DeleteBody } from './types';
 
 
 // TODO: add custom errors
@@ -14,6 +14,7 @@ const nameRegex = /^[\p{L}][ \p{L}'-]*[\p{L}]$/u;
 
 /* NOTE: don't use loginSchema.keys(...) to extend this into the signupSchema
 because we can't set the correct typescript type that way */
+
 const loginSchema = Joi.object<LoginBody>({
     email: Joi.string().trim().email().required(),
     masterPwdHash: Joi.string().trim().hex().length(MPHLength).required()
@@ -53,5 +54,9 @@ const vaultSchema = Joi.object<VaultBody>({
     data: Joi.string().trim().base64().required()
 }).preferences({ abortEarly: false, stripUnknown: true });
 
+const deleteSchema = Joi.object<DeleteBody>({
+    masterPwdHash: Joi.string().trim().hex().length(MPHLength).required()
+}).preferences({ abortEarly: false, stripUnknown: true });
 
-export { loginSchema, signupSchema, updateProfileSchema, sendVerificationSchema, verificationTokenSchema, PSKSchema, vaultSchema };
+
+export { loginSchema, signupSchema, updateProfileSchema, sendVerificationSchema, verificationTokenSchema, PSKSchema, vaultSchema, deleteSchema };

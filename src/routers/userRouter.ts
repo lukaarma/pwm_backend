@@ -9,8 +9,9 @@ import UserVerification from '../database/userVerificationModel';
 import VerificationToken from '../database/verificationTokenModel';
 import ProtSymKey from '../database/PSKModel';
 import { WEB_ERRORS, WEB_MESSAGES } from '../utils/messages';
-import { loginSchema, sendVerificationSchema, signupSchema, updateProfileSchema, verificationTokenSchema } from '../utils/validators';
+import { deleteSchema, loginSchema, sendVerificationSchema, signupSchema, updateProfileSchema, verificationTokenSchema } from '../utils/validators';
 import sendVerificationEmail from '../utils/verificationEmail';
+import Vault from '../database/vaultModel';
 
 
 // TODO: better error handling!
@@ -109,7 +110,7 @@ userRouter.post('/signup', async (req, res) => {
 userRouter.get('/profile', async (req, res) => {
     logger.verbose(`[PROFILE] Requested profile with id '${req.jwtInfo.id}'`);
 
-    const user = await User.findOne({ _id: req.jwtInfo.id });
+    const user = await User.findById(req.jwtInfo.id);
     if (user) {
         logger.debug(`[PROFILE] Found user '${user.email}' with id '${req.jwtInfo.id}'`);
 
@@ -129,8 +130,8 @@ userRouter.put('/profile', async (req, res) => {
     if (!error && userUpdate) {
         logger.verbose(`[PROFILE] Updated profile with id '${req.jwtInfo.id}'`);
 
-        const user = await User.findOneAndUpdate(
-            { _id: req.jwtInfo.id },
+        const user = await User.findByIdAndUpdate(
+            req.jwtInfo.id,
             { firstName: userUpdate.firstName, lastName: userUpdate.lastName },
             { new: true }
         );
@@ -150,6 +151,53 @@ userRouter.put('/profile', async (req, res) => {
         logger.error(`[PROFILE] Bad request! ${error.message}`);
 
         res.status(400).json(WEB_ERRORS.UPDATE_PROFILE_BAD_REQUEST(error.message));
+    }
+});
+
+// NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+userRouter.post('/delete', async (req, res) => {
+    const { error, value: userDelete } = deleteSchema.validate(req.body);
+
+    if (!error && userDelete) {
+        logger.verbose(`[PROFILE] Requested Account deletion for user '${req.jwtInfo.id}'`);
+        const session = await mongoose.connection.startSession();
+        session.startTransaction();
+
+        const user = await User.findById(req.jwtInfo.id).session(session);
+        const PSKPromise = ProtSymKey.findOne({ userId: req.jwtInfo.id }).session(session);
+        const vaultPromise = Vault.findOne({ userId: req.jwtInfo.id }).session(session);
+
+        if (!user) {
+            logger.debug(`[PROFILE DELETE] Cannot find user with id '${req.jwtInfo.id}'`);
+            await session.abortTransaction();
+
+            return res.status(500).json(WEB_ERRORS.VALID_JWT_INVALID_ID);
+        }
+        else if (!await user.validateMPH(userDelete.masterPwdHash)) {
+            logger.debug(`[PROFILE DELETE] Delete failed for user '${req.jwtInfo.id}': wrong password`);
+            await session.abortTransaction();
+
+            return res.status(400).json(WEB_ERRORS.WRONG_PASSWORD);
+        }
+
+        const PSK = await PSKPromise;
+        const vault = await vaultPromise;
+
+        await Promise.all([
+            user.remove(),
+            PSK?.remove(),
+            vault?.remove()
+        ]);
+
+        await session.commitTransaction();
+
+        res.status(200).json(WEB_MESSAGES.ACCOUNT_DELETED);
+    }
+    else {
+        logger.error(`[PROFILE DELETE] Bad request! ${error.message}`);
+
+        res.status(400).json(WEB_ERRORS.DELETE_BAD_REQUEST(error.message));
     }
 });
 
@@ -177,7 +225,6 @@ userRouter.post('/sendVerification', async (req, res) => {
     }
 });
 
-
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises
 userRouter.get('/verify/:token', async (req, res) => {
@@ -190,7 +237,7 @@ userRouter.get('/verify/:token', async (req, res) => {
         if (token) {
             logger.debug(`[VERIFY] Found token '${token.token}' for userId '${token.userId.toString()}'`);
 
-            const userVerification = await UserVerification.findOne({ _id: token.userId });
+            const userVerification = await UserVerification.findById(token.userId);
             if (userVerification) {
                 logger.debug(`[VERIFY] Found user '${userVerification.email}' with userId '${userVerification.id}'`);
 
