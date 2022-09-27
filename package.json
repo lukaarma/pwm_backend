@@ -8,7 +8,7 @@
         "serve:debug": "cross-env NODE_ENV=development NODE_NO_WARNINGS=1 nodemon --inspect-brk ./src/server.ts",
         "serve:dev": "cross-env NODE_ENV=development NODE_NO_WARNINGS=1 nodemon ./src/server.ts",
         "preserve:prod": "tsc --project ./tsconfig.prod.json",
-        "serve:prod": "cross-env NODE_ENV=production node ./build/server.js"
+        "serve:prod": "cross-env NODE_ENV=production node --experimental-specifier-resolution=node ./build/server.js"
     },
     "contributors": [
         "lukaarma <lukaarma@gmail.com> (https://github.com/lukaarma)",
