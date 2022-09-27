@@ -50,7 +50,7 @@ userVerificationSchema.pre('findOneAndUpdate', async function (next) {
     const update = this.getUpdate() as mongoose.UpdateQuery<IUserVerification>;
 
     if (update.masterPwdHash) {
-        await bcrypt.hash(update.masterPwdHash as string, 12)
+        await bcrypt.hash(Buffer.from(update.masterPwdHash as string, 'hex'), 12)
             .then(hash => {
                 logger.debug('[USER_VERIFICATION_MODEL] Password hash created');
                 update.masterPwdHash = hash;

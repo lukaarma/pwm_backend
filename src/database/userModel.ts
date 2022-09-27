@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel>(
         timestamps: true,
         methods: {
             validateMPH(candidate: string): Promise<boolean> {
-                return bcrypt.compare(candidate, this.masterPwdHash);
+                return bcrypt.compare(Buffer.from(candidate, 'hex'), this.masterPwdHash);
             }
         }
     },
@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel>(
 the userVerification collection password is already hashed */
 userSchema.pre('save', async function (next) {
     if (!this.isNew && this.isModified('password')) {
-        await bcrypt.hash(this.masterPwdHash, 12)
+        await bcrypt.hash(Buffer.from(this.masterPwdHash, 'hex'), 12)
             .then(hash => {
                 logger.debug('[USER_MODEL] Password hash created');
                 this.masterPwdHash = hash;
@@ -62,7 +62,7 @@ userSchema.pre('findOneAndUpdate', async function (next) {
     }
 
     if (update.masterPwdHash) {
-        await bcrypt.hash(update.masterPwdHash as string, 12)
+        await bcrypt.hash(Buffer.from(update.masterPwdHash as string, 'hex'), 12)
             .then(hash => {
                 logger.debug('[USER_MODEL] Password hash created');
                 update.masterPwdHash = hash;
