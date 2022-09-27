@@ -4,15 +4,13 @@
 
 When a new account is created, PWM uses Password-Based Key Derivation Function 2 (PBKDF2-SHA512) with 120,000 iteration rounds
 and a salt of the user's email to derive the 256 bit Master Key.
-This Master Key is then expanded to 512 bit using HMAC-based Extract-and-Expand Key Derivation Function (HKDF) obtaining
-the 256 bit Protection Master Key.
 
 A Master Password Hash is also created using PBKDF2-SHA512 with a salt of Master Password and a payload of Master Key.
 This Master Password Hash is sent then to our server over HTTPS.
 
 Then a 256 bit Symmetric Key and 128 bit Initialization Vector (IV) are generated using a
 Cryptographically Secure Pseudorandom Number Generator (CSPRNG).
-The Symmetric key is encrypted with AES-256-CBC bit encryption using the Stretched Master Key and the Initialization Vector,
+The Symmetric key is encrypted with AES-256-CBC bit encryption using the Master Key and the Initialization Vector,
 resulting in the Protected Symmetric Key.
 The Protected Symmetric Key the Initialization Vector are then sent to our server to be stored until a new client syncs
 and retrieves them.
@@ -23,8 +21,8 @@ The resulting Encrypted Vault and Vault IV are then sent back to our server for 
 syncs and retrieves them.
 
 Master Password, Master Key, Symmetric Key and the Credential Vault are **NEVER** transmitted to or stored on our server,
-they are only generated and used on the client, so that you can be sure that no one except , so that no one can ever
-decrypt ad access your credentials except you.
+they are only generated and used on the client, so that no one, even us, can ever decrypt and access your credentials except
+you.
 
 ### SYMMETRIC KEY SECURITY SCHEMA
 
