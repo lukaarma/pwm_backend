@@ -10,7 +10,8 @@ export const LOG_ERRORS = {
     MISSING_MAILGUN_PASSWORD: 'Missing Mailgun password!\nPlease use the MAILGUN_PASSWORD environment variable to specify the Mailgun password!',
     MAILGUN_EU: 'Missing Mailgun EU!\nPlease use the MAILGUN_EU environment variable to specify the Mailgun EU!',
     SERVER_PORT_ISNAN: 'Server port parsing error!\nPlease use the SERVER_PORT environment variable to specify a valid server port!',
-    SERVER_PORT_OUT_OF_RANGE: 'Server port out of range!\nThe server port must be a number between 1 and 65535. Please use the SERVER_PORT environment variable to specify a valid server port!'
+    SERVER_PORT_OUT_OF_RANGE: 'Server port out of range!\nThe server port must be a number between 1 and 65535. Please use the SERVER_PORT environment variable to specify a valid server port!',
+    MAXIMUM_JSON_SIZE_ISNAN: 'Maximum JSON size parsing error!\nPlease use the MAXIMUM_JSON_SIZE environment variable to specify a valid maximum JSON size in bytes!',
 };
 
 
@@ -18,7 +19,8 @@ export const LOG_WARN = {
     MISSING_NODE_ENV: "No environment information detected, Defaulting to 'development'!\nIf you are in a production environment che that your NODE_ENV environment variable is set correctly.",
     MISSING_SERVER_HOSTNAME: "No server hostname specified, using 'localhost'.\nIf you want to specify an hostname use the SERVER_HOSTNAME environment variable.",
     MISSING_SERVER_PORT: 'No server port specified, using 9001.\nIf you want to specify a port use the SERVER_PORT environment variable.',
-    RANDOM_JWT_SECRET: 'No JWT secret provided, generating random secret for development environment.\nIf you want to specify a port JWT secret the JWT_SECRET environment variable.'
+    RANDOM_JWT_SECRET: 'No JWT secret provided, generating random secret for development environment.\nIf you want to specify a port JWT secret the JWT_SECRET environment variable.',
+    MISSING_MAXIMUM_JSON_SIZE: 'No maximum JSON size specified, using default 2 MB.\nIf you want to specify a maximum JSON size use the MAXIMUM_JSON_SIZE environment variable.',
 };
 
 
@@ -56,7 +58,8 @@ enum CODES {
     PSK_BAD_REQUEST,
     VAULT_BAD_REQUEST,
     WRONG_PASSWORD,
-    DELETE_BAD_REQUEST
+    DELETE_BAD_REQUEST,
+    JSON_PAYLOAD_TOO_LARGE
 }
 
 
@@ -87,6 +90,8 @@ export const WEB_ERRORS = {
     VAULT_BAD_REQUEST: (message: string): JSONResponse => make(CODES.VAULT_BAD_REQUEST, message),
     WRONG_PASSWORD: make(CODES.WRONG_PASSWORD, 'Wrong password!'),
     DELETE_BAD_REQUEST: (message: string): JSONResponse => make(CODES.DELETE_BAD_REQUEST, message),
+    JSON_PAYLOAD_TOO_LARGE: (maxSize: number, actualSize: number): JSONResponse =>
+        make(CODES.JSON_PAYLOAD_TOO_LARGE, `JSON message is too large, ${actualSize} bytes is more then the maximum allowed size of ${maxSize} bytes`),
 
     EVERYTHING_IS_ON_FIRE: make(999, 'This is fine. Request in auth route with valid JWT and invalid user id')
 };

@@ -60,7 +60,7 @@ logger.info('Installing middleware ...');
 server.use(morgan('dev'));
 server.use(cors({ origin: process.env.SERVER_HOSTNAME }));
 server.use(helmet());
-server.use(express.json());
+server.use(express.json({limit: process.env.MAXIMUM_JSON_SIZE}));
 server.use(expressJSONErrorHandler());
 server.use(JWTAuth(excludedRoutes));
 

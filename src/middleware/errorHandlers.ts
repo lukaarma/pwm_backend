@@ -4,15 +4,25 @@ import logger from 'winston';
 import { WEB_ERRORS } from '../utils/messages';
 
 
+
+
 export function expressJSONErrorHandler(): express.ErrorRequestHandler {
     return (err, _, res, next) => {
         if (err instanceof SyntaxError) {
-            logger.error({ message: err });
+            logger.error('[JSON ERROR] JSON Payload bad syntax');
 
-            res.status(400).send(WEB_ERRORS.SYNTAX_BAD_REQUEST(err.message));
+            return res.status(400).send(WEB_ERRORS.SYNTAX_BAD_REQUEST(err.message));
         }
+        else if (err instanceof Error && err.name === 'PayloadTooLargeError' && err.length) {
+            logger.error('[JSON ERROR] JSON Payload too large');
 
-        next();
+            return res.status(400).send(WEB_ERRORS.JSON_PAYLOAD_TOO_LARGE(process.env.MAXIMUM_JSON_SIZE, err.length));
+        }
+        else {
+            logger.debug({ message: err as Error });
+
+            next();
+        }
     };
 }
 

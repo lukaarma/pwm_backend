@@ -26,6 +26,7 @@ declare global {
             JWT_SECRET: string,
             SERVER_HOSTNAME: string,
             SERVER_PORT: number,
+            MAXIMUM_JSON_SIZE: number,
             MONGODB_SERVER: string,
             MONGODB_NAME: string,
             MAILGUN_DOMAIN: string,

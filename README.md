@@ -23,6 +23,7 @@ See the [Security Whitepaper] to check for yourself how we handle and store your
 | SERVER_HOSTNAME | String | undefined | ❌ | Set the hostname of the server or of the proxy in front of it. Used for CORS. |
 | SERVER_PORT | 1 - 65535 | 9001 | ❌ | Set the port on which the server will listen. |
 | SERVER_REVERSE_PROXY | Boolean | false | ❌ | Set if the server sits behind a reverse proxy so that the correct remote client information can be extracted from the connection. |
+| MAXIMUM_JSON_SIZE | Number | 2 MB | Set the maximum accepted size, as bytes, for the JSON payloads. |
 
 ### Database options
 

@@ -5,7 +5,7 @@ import { LOG_ERRORS, LOG_WARN } from './messages';
 
 
 export default function (): void {
-    const availableVars = ['NODE_ENV', 'LOG_LEVEL', 'SERVER_HOSTNAME', 'SERVER_PORT', 'SERVER_REVERSE_PROXY', 'MONGODB_SERVER', 'MONGODB_USERNAME', 'MONGODB_X509', 'MONGODB_NAME', 'MAILGUN_DOMAIN', 'MAILGUN_USERNAME', 'MAILGUN_EU'];
+    const availableVars = ['NODE_ENV', 'LOG_LEVEL', 'SERVER_HOSTNAME', 'SERVER_PORT', 'SERVER_REVERSE_PROXY','MAXIMUM_JSON_SIZE', 'MONGODB_SERVER', 'MONGODB_USERNAME', 'MONGODB_X509', 'MONGODB_NAME', 'MAILGUN_DOMAIN', 'MAILGUN_USERNAME', 'MAILGUN_EU'];
     let fatal = false;
 
     for (const env of availableVars) {
@@ -56,8 +56,28 @@ export default function (): void {
     }
     else if (!process.env.SERVER_PORT) {
         logger.warn(LOG_WARN.MISSING_SERVER_PORT);
+        // default 9001
         process.env.SERVER_PORT = 9001;
     }
+
+    if (process.env.MAXIMUM_JSON_SIZE) {
+        // toString not really needed, used to calm Typescript
+        const size = parseInt(process.env.MAXIMUM_JSON_SIZE.toString());
+
+        if (isNaN(size)) {
+            fatal = true;
+            logger.error(LOG_ERRORS.MAXIMUM_JSON_SIZE_ISNAN, { fatal });
+        }
+        else {
+            process.env.MAXIMUM_JSON_SIZE = size;
+        }
+    }
+    else if (!process.env.MAXIMUM_JSON_SIZE) {
+        logger.warn(LOG_WARN.MISSING_MAXIMUM_JSON_SIZE);
+        // default 2 MB
+        process.env.MAXIMUM_JSON_SIZE = 2 * 1024 * 1024;
+    }
+
 
     // Check Database Env
     if (!process.env.MONGODB_SERVER) {
@@ -93,4 +113,9 @@ export default function (): void {
     if (fatal) {
         process.exit(1);
     }
+
+    for (const env of availableVars) {
+        logger.debug(`${env} = ${process.env[env] ?? 'undefined'}`);
+    }
+
 }
