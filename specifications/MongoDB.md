@@ -1,12 +1,74 @@
-# Mongoose models
+# MongoDB
 
-## LEGEND
+## Database ER Diagram
+
+```mermaid
+erDiagram
+    VALIDATION-USER {
+        ObjectId id PK
+        string email
+        string masterPasswordHash
+        string firstName
+        string lastName
+        string PSK
+        string IV
+        date updatedAt
+    }
+
+    VERIFICATION-TOKEN {
+        ObjectId id PK
+        string token
+        ObjectId userID FK
+        date createdAt
+    }
+
+    USER {
+        ObjectId id PK
+        string email
+        string masterPasswordHash
+        string firstName
+        string lastName
+        date updatedAt
+    }
+
+    PROTECTED-SYMMETRIC-KEY {
+        ObjectId id PK
+        string IV
+        string data
+        ObjectId userID FK
+        date createdAt
+        date updatedAt
+
+    }
+
+    VAULT {
+        ObjectId id PK
+        string IV
+        string data
+        number version
+        date lastModified
+        ObjectId userID FK
+        date createdAt
+        date updatedAt
+
+    }
+
+
+    VALIDATION-USER ||--|{ VERIFICATION-TOKEN : "validated by"
+
+    USER ||--|| PROTECTED-SYMMETRIC-KEY : "has"
+    USER ||--|| VAULT : "has"
+```
+
+## Mongoose models
+
+### Legend
 
 ✅ Required <br>
 ❌ Not required <br>
 ⚙️ Property added automatically
 
-## USER
+## User
 
 Stored in the 'Users' collection, where all authentication and profile management occurs
 
@@ -22,7 +84,7 @@ Stored in the 'Users' collection, where all authentication and profile managemen
 | updatedAt | Date | ⚙️ | ❌ | Updated each time the document is updated |
 | _id | ObjectId | ⚙️ | ✅ | MongoDB ObjectId, saved in JWT token to identify users |
 
-## USER VERIFICATION
+## User Verification
 
 Stored in the 'UsersVerification' collection until verified, entries are deleted 4h after the last update <br>
 When verified the data will be split and both a User and a Protected Symmetric Key entry will be created
@@ -41,7 +103,7 @@ When verified the data will be split and both a User and a Protected Symmetric K
 | updatedAt | Date | ⚙️ | ❌ | Updated each time the document is updated |
 | _id | ObjectId | ⚙️ | ✅ | MongoDB ObjectId, saved in JWT token to identify users |
 
-## VERIFICATION TOKEN
+## Verification Token
 
 Stored in the 'VerificationTokens' collection, deleted when validation occurs or after 4h without use
 
@@ -54,7 +116,7 @@ Stored in the 'VerificationTokens' collection, deleted when validation occurs or
 | createdAt | Date | ⚙️ | ❌ | Initialized at creation, never updated, used to delete after 4h if not verified |
 | _id | ObjectId | ⚙️ | ✅ | MongoDB ObjectId |
 
-## PROTECTED SYMMETRIC KEY
+## Protected Symmetric Key
 
 Stored in the 'ProtectedSymmetricKeys' collection
 
@@ -69,7 +131,7 @@ Stored in the 'ProtectedSymmetricKeys' collection
 | updatedAt | Date | ⚙️ | ❌ | Updated each time the document is updated |
 | _id | ObjectId | ⚙️ | ✅ | MongoDB ObjectId |
 
-## VAULT
+## Vault
 
 Stored in the 'Vaults' collection
 
