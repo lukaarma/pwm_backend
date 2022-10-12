@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel>(
 /* NOTE: only hash on update, when we transfer the user from
 the userVerification collection password is already hashed */
 userSchema.pre('save', async function (next) {
-    if (!this.isNew && this.isModified('password')) {
+    if (!this.isNew && this.isModified('masterPwdHash')) {
         await bcrypt.hash(Buffer.from(this.masterPwdHash, 'hex'), 12)
             .then(hash => {
                 logger.debug('[USER_MODEL] Password hash created');

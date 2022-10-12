@@ -102,3 +102,17 @@ encryptedVaultEl.value = '';
 // console.log(test);
 // console.log(b64);
 // console.log(decoded);
+
+
+const MK0 = await cryptoUtils.deriveMK('secrewrityreleases@gmail.com', 'Password0!');
+const MK1 = await cryptoUtils.deriveMK('secrewrityreleases@gmail.com', 'Password1!');
+
+const IV = window.crypto.getRandomValues(new Uint8Array(16));
+const SK = window.crypto.getRandomValues(new Uint8Array(32));
+
+const PSK0 = await cryptoUtils.encryptSK(IV, MK0, SK);
+const PSK1 = await cryptoUtils.encryptSK(IV, MK1, SK);
+
+console.log(`IV: ${cryptoUtils.toHex(IV)}`);
+console.log(`PSK0: ${cryptoUtils.toHex(PSK0)}`);
+console.log(`PSK1: ${cryptoUtils.toHex(PSK1)}`);
