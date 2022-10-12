@@ -9,7 +9,7 @@ import UserVerification from '../database/userVerificationModel';
 import VerificationToken from '../database/verificationTokenModel';
 import ProtSymKey from '../database/PSKModel';
 import { WEB_ERRORS, WEB_MESSAGES } from '../utils/messages';
-import { deleteSchema, loginSchema, sendVerificationSchema, signupSchema, updateProfileSchema, verificationTokenSchema } from '../utils/validators';
+import { changePasswordSchema, deleteSchema, loginSchema, sendVerificationSchema, signupSchema, updateProfileSchema, verificationTokenSchema } from '../utils/validators';
 import sendVerificationEmail from '../utils/verificationEmail';
 import Vault from '../database/vaultModel';
 
@@ -104,6 +104,61 @@ userRouter.post('/signup', async (req, res) => {
         res.status(400).json(WEB_ERRORS.SIGNUP_BAD_REQUEST(error.message));
     }
 });
+
+// NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+userRouter.post('/changePassword', async (req, res) => {
+    const { error, value: changePasswordInfo } = changePasswordSchema.validate(req.body);
+
+    if (!error && changePasswordInfo) {
+        logger.verbose(`[CHANGE PASSWORD] Requested password change for user '${req.jwtInfo.id}'`);
+        const session = await mongoose.connection.startSession();
+        session.startTransaction();
+
+        const user = await User.findById(req.jwtInfo.id).session(session);
+        const protSymKeyPromise = ProtSymKey.findOne({ userId: req.jwtInfo.id }).session(session);
+
+        if (!user) {
+            logger.debug(`[CHANGE PASSWORD] Cannot find user with id '${req.jwtInfo.id}'`);
+            await session.abortTransaction();
+
+            return res.status(500).json(WEB_ERRORS.VALID_JWT_INVALID_ID);
+        }
+        else if (!await user.validateMPH(changePasswordInfo.oldMasterPwdHash)) {
+            logger.debug(`[CHANGE PASSWORD] Password change failed for user '${req.jwtInfo.id}': wrong password`);
+            await session.abortTransaction();
+
+            return res.status(400).json(WEB_ERRORS.WRONG_PASSWORD);
+        }
+
+        const protSymKey = await protSymKeyPromise;
+        if (!protSymKey) {
+            logger.debug(`[CHANGE PASSWORD] Cannot find PSK for user'${req.jwtInfo.id}'`);
+            await session.abortTransaction();
+
+            return res.status(400).json(WEB_ERRORS.MISSING_PSK);
+        }
+
+        user.masterPwdHash = changePasswordInfo.newMasterPwdHash;
+        protSymKey.IV = changePasswordInfo.IV;
+        protSymKey.PSK = changePasswordInfo.PSK;
+
+        await Promise.all([
+            user.save(),
+            protSymKey.save()
+        ]);
+
+        await session.commitTransaction();
+
+        res.status(200).json(WEB_MESSAGES.PASSWORD_CHANGED);
+    }
+    else {
+        logger.error(`[CHANGE PASSWORD] Bad request! ${error.message}`);
+
+        res.status(400).json(WEB_ERRORS.CHANGE_PASSWORD_BAD_REQUEST(error.message));
+    }
+});
+
 
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date
 // eslint-disable-next-line @typescript-eslint/no-misused-promises

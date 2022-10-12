@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { LoginBody, SignupBody, UpdateProfileBody, SendVerificationBody, PSKBody, VaultBody, DeleteBody } from './types';
+import { LoginBody, SignupBody, UpdateProfileBody, SendVerificationBody, PSKBody, VaultBody, DeleteBody, ChangePasswordBody } from './types';
 
 
 // TODO: add custom errors
@@ -58,5 +58,12 @@ const deleteSchema = Joi.object<DeleteBody>({
     masterPwdHash: Joi.string().trim().hex().length(MPHLength).required()
 }).preferences({ abortEarly: false, stripUnknown: true });
 
+const changePasswordSchema = Joi.object<ChangePasswordBody>({
+    oldMasterPwdHash: Joi.string().trim().hex().length(MPHLength).required(),
+    newMasterPwdHash: Joi.string().trim().hex().length(MPHLength).required(),
+    IV: Joi.string().trim().hex().length(IVLength).required(),
+    PSK: Joi.string().trim().hex().length(PSKLength).required()
+}).preferences({ abortEarly: false, stripUnknown: true });
 
-export { loginSchema, signupSchema, updateProfileSchema, sendVerificationSchema, verificationTokenSchema, PSKSchema, vaultSchema, deleteSchema };
+
+export { loginSchema, signupSchema, updateProfileSchema, sendVerificationSchema, verificationTokenSchema, PSKSchema, vaultSchema, deleteSchema, changePasswordSchema };

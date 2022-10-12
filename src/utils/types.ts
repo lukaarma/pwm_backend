@@ -78,7 +78,14 @@ type VaultBody = {
 
 type DeleteBody = { masterPwdHash: string }
 
-export { LoginBody, SignupBody, UpdateProfileBody, SendVerificationBody, PSKBody, VaultBody, DeleteBody };
+type ChangePasswordBody = {
+    oldMasterPwdHash: string,
+    newMasterPwdHash: string,
+    IV: string,
+    PSK: string,
+}
+
+export { LoginBody, SignupBody, UpdateProfileBody, SendVerificationBody, PSKBody, VaultBody, DeleteBody, ChangePasswordBody };
 
 
 /* ===== Mongoose ===== */

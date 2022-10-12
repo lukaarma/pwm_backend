@@ -2,7 +2,7 @@ openapi: 3.1.0
 
 info:
     title: PassWordManagerAPI
-    version: 1.4.0
+    version: 1.5.0
     description: >-
         PassWordManager API used to manage users, personal credential databases and
         the services offered to the user
@@ -130,6 +130,43 @@ paths:
                                     format: password
                             required:
                                 - masterPwdHash
+
+            responses:
+                "200":
+                    $ref: "#/components/responses/200"
+                "400":
+                    $ref: "#/components/responses/400"
+                "500":
+                    $ref: "#/components/responses/500"
+
+    /user/changePassword:
+        post:
+            summary: Change the user's MPH and PSK.
+
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                oldMasterPwdHash:
+                                    type: string
+                                    format: password
+                                newMasterPwdHash:
+                                    type: string
+                                    format: password
+                                IV:
+                                    type: string
+                                    format: hex
+                                PSK:
+                                    type: string
+                                    format: hex
+                            required:
+                                - oldMasterPwdHash
+                                - newMasterPwdHash
+                                - IV
+                                - PSK
 
             responses:
                 "200":

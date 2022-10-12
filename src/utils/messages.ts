@@ -27,6 +27,7 @@ export const LOG_WARN = {
 enum CODES {
     PSK_SAVED_SUCCESS = 100,
     VAULT_SAVED_SUCCESS,
+    PASSWORD_CHANGED,
     VERIFICATION_TOKEN_SENT = 110,
     PROFILE_VERIFIED = 120,
     ACCOUNT_DELETED,
@@ -59,7 +60,8 @@ enum CODES {
     VAULT_BAD_REQUEST,
     WRONG_PASSWORD,
     DELETE_BAD_REQUEST,
-    JSON_PAYLOAD_TOO_LARGE
+    JSON_PAYLOAD_TOO_LARGE,
+    CHANGE_PASSWORD_BAD_REQUEST
 }
 
 
@@ -90,6 +92,7 @@ export const WEB_ERRORS = {
     VAULT_BAD_REQUEST: (message: string): JSONResponse => make(CODES.VAULT_BAD_REQUEST, message),
     WRONG_PASSWORD: make(CODES.WRONG_PASSWORD, 'Wrong password!'),
     DELETE_BAD_REQUEST: (message: string): JSONResponse => make(CODES.DELETE_BAD_REQUEST, message),
+    CHANGE_PASSWORD_BAD_REQUEST: (message: string): JSONResponse => make(CODES.CHANGE_PASSWORD_BAD_REQUEST, message),
     JSON_PAYLOAD_TOO_LARGE: (maxSize: number, actualSize: number): JSONResponse =>
         make(CODES.JSON_PAYLOAD_TOO_LARGE, `JSON message is too large, ${actualSize} bytes is more then the maximum allowed size of ${maxSize} bytes`),
 
@@ -100,6 +103,7 @@ export const WEB_ERRORS = {
 export const WEB_MESSAGES = {
     PSK_SAVED_SUCCESS: make(CODES.PSK_SAVED_SUCCESS, 'Protected Symmetric Key saved successfully'),
     VAULT_SAVED_SUCCESS: make(CODES.VAULT_SAVED_SUCCESS, 'Vault saved successfully'),
+    PASSWORD_CHANGED: make(CODES.PASSWORD_CHANGED, 'Password and PSK changed successfully'),
     VERIFICATION_TOKEN_SENT: (email: string): JSONResponse =>
         make(CODES.VERIFICATION_TOKEN_SENT, `A confirmation email was sent to '${email}'.\nPlease check your inbox.`),
     PROFILE_VERIFIED: make(CODES.PROFILE_VERIFIED, 'Profile verified successfully'),
