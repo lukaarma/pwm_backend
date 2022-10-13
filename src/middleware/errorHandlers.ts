@@ -4,6 +4,9 @@ import logger from 'winston';
 import { WEB_ERRORS } from '../utils/messages';
 
 
+type PayloadTooLargeError = {
+    length: number
+}
 
 
 export function expressJSONErrorHandler(): express.ErrorRequestHandler {
@@ -13,10 +16,10 @@ export function expressJSONErrorHandler(): express.ErrorRequestHandler {
 
             return res.status(400).send(WEB_ERRORS.SYNTAX_BAD_REQUEST(err.message));
         }
-        else if (err instanceof Error && err.name === 'PayloadTooLargeError' && err.length) {
+        else if (err instanceof Error && err.name === 'PayloadTooLargeError' && (err as unknown as PayloadTooLargeError).length) {
             logger.error('[JSON ERROR] JSON Payload too large');
 
-            return res.status(400).send(WEB_ERRORS.JSON_PAYLOAD_TOO_LARGE(process.env.MAXIMUM_JSON_SIZE, err.length));
+            return res.status(400).send(WEB_ERRORS.JSON_PAYLOAD_TOO_LARGE(process.env.MAXIMUM_JSON_SIZE, (err as unknown as PayloadTooLargeError).length));
         }
         else {
             logger.debug({ message: err as Error });
