@@ -44,7 +44,9 @@ const excludedRoutes = [
     '/signup',
     '/assets',
     '/sendVerification',
-    '/favicon.ico',
+    '/favicon.png',
+    '/profile',
+    '/vault',
     // API
     '/api/user/login',
     '/api/user/signup',
