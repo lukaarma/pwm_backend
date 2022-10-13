@@ -14,7 +14,7 @@ export default async function sendVerificationEmail(email: string, token: string
     await sendMail(
         email,
         'Please verify your PWM account',
-        `Please use the following link to verify your account: https://dev.lukaarma.dynu.net/api/user/verify/${token}`
+        `Please use the following link to verify your account: https://${process.env.SERVER_HOSTNAME}/api/user/verify/${token}`
     );
 }
 
