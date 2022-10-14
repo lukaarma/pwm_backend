@@ -1,8 +1,6 @@
 import logger from 'winston';
 
 
-// TODO: add checks for email fail
-
 const url = `https://api${process.env.MAILGUN_EU ? '.eu' : ''}.mailgun.net/v3/${process.env.MAILGUN_DOMAIN}/messages`;
 const headers = new Headers({
     Authorization: `Basic ${Buffer.from(process.env.MAILGUN_USERNAME + ':' + process.env.MAILGUN_PASSWORD).toString('base64')}`

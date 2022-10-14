@@ -17,9 +17,6 @@ import checkEnvironment from './utils/checkEnvironment';
 import { initLogger } from './utils/logger';
 
 
-// TODO: customize helmet CSP with nonces
-// TODO: check all HTTP codes
-
 // first of all init logger to create transports
 initLogger();
 
@@ -101,7 +98,6 @@ if (process.env.NODE_ENV === 'development') {
 server.use('/api/user', userRouter);
 server.use('/api/vault', vaultRouter);
 
-// FIXME: hardcoded folders
 if (process.env.NODE_ENV === 'production') {
     server.use(connectHistoryApiFallback());
 

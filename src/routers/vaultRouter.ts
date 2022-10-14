@@ -9,8 +9,6 @@ import { WEB_ERRORS, WEB_MESSAGES } from '../utils/messages';
 import { PSKSchema, vaultSchema, deleteSchema } from '../utils/validators';
 
 
-// TODO: better error handling!
-
 const vaultRouter = express.Router();
 
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date

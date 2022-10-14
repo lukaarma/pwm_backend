@@ -5,8 +5,6 @@ import logger from 'winston';
 import { IUserVerification, UserVerificationModel } from '../utils/types';
 
 
-// TODO: consider upping bcrypt round to 13
-
 // create the schema for the database using the interface and the model
 const userVerificationSchema = new mongoose.Schema<IUserVerification, UserVerificationModel>(
     {

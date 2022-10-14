@@ -14,10 +14,6 @@ import sendVerificationEmail from '../utils/verificationEmail';
 import Vault from '../database/vaultModel';
 
 
-// TODO: better error handling!
-// TODO: email revalidation if token timeout
-// TODO: password update
-
 const userRouter = express.Router();
 
 // NOTE: Express 5 correctly handles Promises, Typescript declarations not yet up to date

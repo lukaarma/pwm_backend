@@ -6,8 +6,6 @@ import { JwtInfo } from '../utils/types';
 import { WEB_ERRORS } from '../utils/messages';
 
 
-// TODO: better route exclusion
-
 export default function (excludedPaths?: Array<string>):
     ((req: express.Request, res: express.Response, next: express.NextFunction) => void) {
 

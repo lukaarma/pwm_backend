@@ -2,8 +2,6 @@ import Joi from 'joi';
 import { LoginBody, SignupBody, UpdateProfileBody, SendVerificationBody, PSKBody, VaultBody, DeleteBody, ChangePasswordBody } from './types';
 
 
-// TODO: add custom errors
-
 // Bcrypt max input size => 72 Bytes => x2 because hex encoding (2 hex char per byes)
 const MPHLength = 72 * 2;
 // Bit size / 4 because hex encoding (4 bit per hex char)
